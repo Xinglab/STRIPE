@@ -76,8 +76,8 @@ p <- ggplot(outDF %>% filter(Rank <= 2000), aes(x = Rank, y = log2(TPM + 1))) + 
     axis.ticks = element_line(color = "black", linewidth = 0.25), strip.text = element_text(color = "black", size = 6), legend.title = element_blank(), 
     legend.text = element_text(color = "black", size = 6), legend.key.size = unit(0.15, 'cm'), legend.position = "bottom", 
     legend.background = element_rect(color = "black", linewidth = 0.25, fill = NA)) + xlab("Genes ranked by abundance") + ylab("Gene abundance\nlog2(TPM+1)") +
-    geom_text(data = on.target.rates, aes(x = 600, y = 12, label = Label), size = 5/14*5, hjust = 0) + scale_fill_manual(values = palette) +
-    geom_text(data = enrichment.fold, aes(x = 600, y = 10, label = Label), size = 5/14*5, hjust = 0) 
+    geom_text(data = on.target.rates, aes(x = 600, y = 12, label = Label), size = 5/14*6, hjust = 0) + scale_fill_manual(values = palette) +
+    geom_text(data = enrichment.fold, aes(x = 600, y = 10, label = Label), size = 5/14*6, hjust = 0) 
 
 # Save p to outfile
 ggsave(outfile, plot = p, width = 3, height = 2)
