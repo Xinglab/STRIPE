@@ -6,6 +6,7 @@ Date: 2024.10.02
 Supplementary Table 5
 
 Detection and prioritization of known pathogenic small variants in exonic regions using TEQUILA-seq data for previously diagnosed patients.
+Information from previous genomic sequencing data was not used to guide read phasing or variant detection.
 '''
 
 # =====================================================================================================================
