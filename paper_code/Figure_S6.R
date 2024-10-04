@@ -38,7 +38,7 @@ palette <- setNames(c("#F7A63D", "#63BA96", "#4C78B9", "#88CCEE", "#CE90BE", "#9
     "Nonsense", "Structural deletion"))
 
 p <- ggplot() + geom_boxplot(data = inDF, aes(x = minor_ratio * 100, y = minor_class), linewidth = 0.5, width = 0.5, alpha = 0.5, color = "black") + 
-    geom_jitter(data = inDF, aes(x = minor_ratio * 100, y = minor_class, color = minor_class), stroke = NA, alpha = 0.8, width = 0, height = 0.1, size = 2)  + 
+    geom_jitter(data = inDF, aes(x = minor_ratio * 100, y = minor_class, color = minor_class), stroke = NA, alpha = 0.8, width = 0, height = 0.1)  + 
     theme_bw() + xlab("Minor haplotype expression ratio (%)") + theme(panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
     axis.title.x = element_text(color = "black", size = 7), axis.title.y = element_blank(), axis.ticks = element_line(color = "black", linewidth = 0.25), 
     legend.position = "none") + coord_cartesian(xlim = c(0, 50)) + scale_color_manual(values = palette)
