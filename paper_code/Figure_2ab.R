@@ -87,7 +87,7 @@ gtfDF <- mutate(gtfDF, V3 = case_when(!("CDS" %in% gtfDF$V3) & V3 == "exon" ~ "U
 
 # Shrink genomic features in gtfDF, hap1DF, and hap2DF
 oldCoord <- sort(unique(c(gtfDF$V4, gtfDF$V5, hap1DF$Start, hap1DF$End, hap2DF$Start, hap2DF$End)))
-newCoord <- cumsum(c(0, RescaleFeature(tail(pivots, -1) - head(pivots, -1))))
+newCoord <- cumsum(c(0, RescaleFeature(tail(oldCoord, -1) - head(oldCoord, -1))))
 gtfDF <- mutate(gtfDF, V4 = recode(V4, !!!setNames(newCoord, oldCoord))/max(newCoord),
     V5 = recode(V5, !!!setNames(newCoord, oldCoord))/max(newCoord))
 hap1DF <- mutate(hap1DF, Start = recode(Start, !!!setNames(newCoord, oldCoord))/max(newCoord),
