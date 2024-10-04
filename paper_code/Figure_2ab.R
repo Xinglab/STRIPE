@@ -112,7 +112,7 @@ gene.structure <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 0.75
     ymax = 1 - cdsDF$V5, color = "black", linewidth = 0.5) + geom_segment(data = intronDF, x = 1, xend = 1, y = 1 - intronDF$V4, yend = 1 - intronDF$V5,
     linewidth = 0.5, color = "black") + theme_classic() + xlim(0.5, 1.5) + theme(axis.title.y = element_blank(), axis.ticks = element_blank(),
     axis.text = element_blank(), axis.line = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-    axis.title.x = element_text(color = "black", size = 7, face = "italic")) + coord_flip() + ylab("PIGN") 
+    axis.title.x = element_text(color = "black", size = 7)) + coord_flip() + ylab("PIGN (NM_176787.5)") 
 p1 <- plot_grid(gene.coverage, gene.structure, ncol = 1, align = "v", rel_heights = c(2.25, 1))
 
 # Remove intermediate files
@@ -154,9 +154,8 @@ for (sampid in cohort.samples) {
 outDF <- bind_rows(outDF, tibble(Ratio = sample.values, Group = sample.labels)) %>% mutate(Group = factor(as.character(Group), 
     levels = c("Fibroblasts (GTEx)", "Fibroblasts (cohort)", "CDG-183-1")), Rank = rank(Ratio, ties.method = "first")) %>% drop_na
 
-p2 <- ggplot() + geom_point(data = outDF %>% filter(Group != "CDG-183-1"), aes(x = Rank, y = Ratio, color = Group), stroke = NA) + 
-    geom_point(data = outDF %>% filter(Group == "CDG-183-1"), aes(x = Rank, y = Ratio, color = Group), stroke = NA) +
-    theme_classic() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+p2 <- ggplot(outDF, aes(x = Rank, y = Ratio, color = Group)) + geom_point(stroke = NA) + theme_classic() + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
     axis.text = element_text(color = "black", size = 6), axis.title = element_text(color = "black", size = 7), 
     axis.ticks = element_line(color = "black", linewidth = 0.25), legend.title = element_blank(), legend.position = c(0.6, 0.4), 
     legend.text = element_text(color = "black", size = 6)) + ylab("Minor haplotype expression ratio") + xlab("Sample rank") + 
