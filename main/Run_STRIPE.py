@@ -854,7 +854,7 @@ def HaplotypeDosage(targets, gtex_haplotype, outdir):
                                 pval = BetaBinomialTest(min(phasingInfo[1], phasingInfo[2]), phasingInfo[1] + phasingInfo[2], [fit[0]] * 2)
                                 with open(outdir + '/target_genes/' + target[4] + '/haplotype_dosage/output.txt', 'w') as outfile:
                                     _ = outfile.write('Read count (haplotype 1)\t%s\n' % int(phasingInfo[1]))
-                                    _ = outfile.write('Read count (haplotype 1)\t%s\n' % int(phasingInfo[2]))
+                                    _ = outfile.write('Read count (haplotype 2)\t%s\n' % int(phasingInfo[2]))
                                     _ = outfile.write('Phasing quality score\t%s\n' % format(phasingInfo[0], '.4f'))
                                     _ = outfile.write('Haplotype dosage (p-value)\t%s\n' % format(pval, '.3e'))
 
