@@ -5,8 +5,6 @@
 # Supplementary Figure 6
 
 # Minor haplotype expression ratios for genes with heterozygous pathogenic variants in previously diagnosed patients.
-# P values are computed from a haplotype dosage outlier test, which assesses whether haplotype expression ratios in a sample 
-# are consistent with those observed in tissue-matched GTEx controls (Methods).
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
