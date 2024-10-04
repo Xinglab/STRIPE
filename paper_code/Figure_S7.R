@@ -4,7 +4,7 @@
 # Date: 2024.10.04
 # Supplementary Figure 7
 
-# (a) Haplotype-specific expression of TRMU in individual Q1642, who is heterozygous for a 1.8-kb structural deletion
+# (a) Haplotype-resolved expression of TRMU in individual Q1642, who is heterozygous for a 1.8-kb structural deletion
 # that removes the promoter region and first exon. (b) Major and minor haplotype read counts for TRMU across cohort samples
 # and tissue-matched GTEx controls. 
 
