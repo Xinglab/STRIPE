@@ -4,8 +4,8 @@
 # Date: 2024.10.02
 # Supplementary Figure 5a
 
-# Number of known pathogenic small variants in exonic regions that were detected and phased using information from TEQUILA-seq 
-# data for previously diagnosed patients. 
+# Number of known pathogenic small variants in exonic regions that were detected and phased by STRIPE using information 
+# from TEQUILA-seq data alone for previously diagnosed patients.
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
