@@ -4,7 +4,7 @@
 # Date: 2024.10.03
 # Figure 2a,b
 
-# (a) Haplotype-specific expression of PIGN in individual CDG-183-1, who is heterozygous for a rare stop-gain variant
+# (a) Haplotype-resolved expression of PIGN in individual CDG-183-1, who is heterozygous for a rare stop-gain variant
 # (NM_176787.5[PIGN]: c.1759C>T, p.Arg587Ter). (b) Major and minor haplotype read counts for PIGN across cohort samples
 # and tissue-matched GTEx controls. 
 
