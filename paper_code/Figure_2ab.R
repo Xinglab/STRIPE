@@ -125,41 +125,37 @@ system(paste("rm -rf", file.path(dirname(outfile), "tmp")))
 # Retrieve minor haplotype expression ratios for target gene across GTEx controls
 gtex.haplotype <- tail(as.character((read.table(file.path(workdir, "CDG/references/GTEx_v8/Fibroblast/target_genes.haplotype_expression.txt"), 
     sep = "\t", header = TRUE, check.names = FALSE) %>% filter(grepl(target.gene$V4, name)))[1,]), -1)
-gtex.haplotype <- unlist(lapply(strsplit(gtex.haplotype, "\\|"), function(x) min(as.integer(x[1]), as.integer(x[2]))/ifelse(as.integer(x[1]) + 
-    as.integer(x[2]) >= 20, as.integer(x[1]) + as.integer(x[2]), NA)))
-outDF <- tibble(Ratio = gtex.haplotype) %>% mutate(Group = "Fibroblasts (GTEx)") %>% drop_na
+minor.counts <- unlist(lapply(strsplit(gtex.haplotype, "\\|"), function(x) min(as.integer(x[1]), as.integer(x[2]))))
+major.counts <- unlist(lapply(strsplit(gtex.haplotype, "\\|"), function(x) max(as.integer(x[1]), as.integer(x[2]))))
+outDF <- tibble(Minor = minor.counts, Major = major.counts) %>% mutate(Group = "Fibroblasts (GTEx)")
 
 # Retrieve minor haplotype expression ratios for target gene across cohort samples
 cohort.samples <- read.table(file.path(workdir, "CDG/samples.txt"), sep = "\t", header = TRUE) %>% filter(Provider != "Lan Lin") %>% pull(ID)
 sample.labels <- c()
-sample.values <- c()
+minor.counts <- c()
+major.counts <- c()
 for (sampid in cohort.samples) {
-    if (sampid == "CDG-183-1") {
-        sample.labels <- c(sample.labels, "CDG-183-1")
-    } else {
-        sample.labels <- c(sample.labels, "Fibroblasts (cohort)")
-    }
     infile <- file.path(workdir, "CDG", sampid, "RNA/stripe/target_genes/PIGN/phasing_stats.txt")
     if (file.exists(infile)) {
-        inDF <- read.table(infile, header = FALSE, sep = "\t")
-        if(inDF[2,2]+inDF[3,2] >= 100){
-            sample.values <- c(sample.values, min(inDF[2,2], inDF[3,2])/(inDF[2,2] + inDF[3,2]))
+        if (sampid == "CDG-183-1") {
+            sample.labels <- c(sample.labels, sampid)
         } else {
-            sample.values <- c(sample.values, NA)
+            sample.labels <- c(sample.labels, "Fibroblasts (cohort)")
         }
-    } else {
-        sample.values <- c(sample.values, NA)
+        inDF <- read.table(infile, header = FALSE, sep = "\t")
+        minor.counts <- c(minor.counts, min(inDF[2,2], inDF[3,2]))
+        major.counts <- c(major.counts, max(inDF[2,2], inDF[3,2]))
     }
 }
-outDF <- bind_rows(outDF, tibble(Ratio = sample.values, Group = sample.labels)) %>% mutate(Group = factor(as.character(Group), 
-    levels = c("Fibroblasts (GTEx)", "Fibroblasts (cohort)", "CDG-183-1")), Rank = rank(Ratio, ties.method = "first")) %>% drop_na
+outDF <- bind_rows(outDF, tibble(Minor = minor.counts, Major = major.counts, Group = sample.labels)) %>% mutate(Group = factor(as.character(Group), 
+    levels = c("Fibroblasts (GTEx)", "Fibroblasts (cohort)", "CDG-183-1")))
 
-p2 <- ggplot(outDF, aes(x = Rank, y = Ratio, color = Group)) + geom_point(stroke = NA) + theme_classic() + 
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
-    axis.text = element_text(color = "black", size = 6), axis.title = element_text(color = "black", size = 7), 
-    axis.ticks = element_line(color = "black", linewidth = 0.25), legend.title = element_blank(), legend.position = c(0.6, 0.4), 
-    legend.text = element_text(color = "black", size = 6)) + ylab("Minor haplotype expression ratio") + xlab("Sample rank") + 
-    scale_color_manual(values = c("#1A78AC", "#6FC7CE", "#E43321"))
+p2 <- ggplot(outDF, aes(x = Major, y = Minor, color = Group)) + geom_point(stroke = NA, alpha = 0.8) + theme_bw() + 
+    scale_x_continuous(trans = "pseudo_log", breaks = c(0, 10, 100, 1000)) + scale_y_continuous(trans = "pseudo_log", 
+    breaks = c(0, 10, 100, 1000)) + theme(panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
+    axis.title = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
+    legend.position = "none", plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + ylab("Minor haplotype read count") + 
+    xlab("Major haplotype read count") + scale_color_manual(values = c("#1A78AC", "#6FC7CE", "#E43321")) + ggtitle("PIGN")
 
 # Assemble p1 and p2 onto the same plotting grid
 p <- plot_grid(p1, p2, nrow = 1, rel_widths = c(2, 1), labels = c("a", "b"), label_size = 8)
