@@ -5,7 +5,7 @@ Author: Robert Wang (Xing Lab)
 Date: 2024.10.03
 Supplementary Table 6
 
-Haplotype-resolved read counts for genes with heterozygous pathogenic variants in previously diagnosed patients. P values 
+Haplotype-resolved read counts for genes with heterozygous pathogenic variants in 20 previously diagnosed patients. P values 
 are computed from a haplotype dosage outlier test, which assesses whether haplotype expression ratios in a sample are 
 consistent with those observed in tissue-matched GTEx controls (Methods).
 '''
