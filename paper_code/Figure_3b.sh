@@ -4,8 +4,8 @@
 # Date: 2024.10.05
 # Figure 3b
 
-# (b) Sashimi plot visualization of ATP5MK splicing patterns in individual Q1663, who carries a homozygous mutation
-# that disrupts the donor splice site of intron 3.
+# (b) Sashimi plot visualization of ATP5MK splicing patterns in individual Q1663, who carries a homozygous mutation 
+# (NM_001206427.2: c.87+1G>C) that disrupts the donor splice site of intron 3.
 
 # =====================================================================================================================
 #                                                        MAIN
