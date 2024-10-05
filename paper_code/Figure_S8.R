@@ -7,9 +7,8 @@
 # (a) Outlier shift values for haplotype-resolved splice junctions in genes with heterozygous or hemizygous pathogenic variants 
 # in previously diagnosed patients. For a given splice junction, an outlier shift value is computed as the absolute difference 
 # between its haplotype-resolved usage frequency in a sample and its average usage frequency across tissue-matched GTEx controls. 
-# Splice junctions supported by at least 20 haplotype-resolved reads in a given sample are displayed, and splice junctions with
-# outlier shift values less than 5% are greyed out. (b) Same as in (a) but organized based on whether a variant is predicted to 
-# impact splicing (SpliceAI score > 0.1) rather than variant class. 
+# Splice junctions supported by at least 20 haplotype-resolved reads in a given sample are displayed. (b) Same as in (a) but 
+# organized based on whether a variant is predicted to impact splicing (SpliceAI score > 0.1) rather than variant class. 
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
@@ -32,9 +31,6 @@ outfile <- file.path(workdir, "manuscript/Supplementary_Figures/Figure_S8/Figure
 # Read in Supplementary Table 7 as a dataframe
 inDF <- read.table(file.path(workdir, "manuscript/Supplementary_Tables/Table_S7/Table_S7.txt"), sep = "\t", header = TRUE)
 
-# Flag junctions in inDF with absolute shift values < 5%
-inDF$Minor <- abs(inDF$hap_junction_usage_shift) < 0.05
-
 # =====================================================================================================================
 #                                                      PANEL A
 # =====================================================================================================================
@@ -46,14 +42,12 @@ inDF$variant_class <- factor(as.character(inDF$variant_class), levels = classLev
 palette <- setNames(c("#F7A63D", "#63BA96", "#4C78B9", "#88CCEE", "#CE90BE", "#954492", "#E83578", "#223671"), 
     c("Missense", "Synonymous", "Splice donor", "Splice acceptor", "Inframe deletion", "Frameshift duplication", 
     "Nonsense", "Structural deletion"))
-p1 <- ggplot() + geom_boxplot(data = inDF, aes(x = abs(hap_junction_usage_shift) * 100, y = variant_class), linewidth = 0.5, width = 0.5, alpha = 0.5,
-    color = "black", outlier.shape = NA) + geom_jitter(data = inDF %>% filter(Minor), aes(x = abs(hap_junction_usage_shift) * 100, y = variant_class), 
-    color = "#BFBFBF", stroke = NA, alpha = 0.5, width = 0, height = 0.1) + geom_jitter(data = inDF %>% filter(!Minor), 
-    aes(x = abs(hap_junction_usage_shift) * 100, y = variant_class, color = variant_class), stroke = NA, alpha = 0.8, width = 0, height = 0.1) +
-    theme_bw() + xlab("Outlier shift in splice junction usage frequency (%)") + theme(panel.background = element_blank(), 
+p1 <- ggplot() + geom_violin(data = inDF, aes(x = abs(hap_junction_usage_shift) * 100, y = variant_class), linewidth = 0.5, 
+    color = "black") + geom_jitter(data = inDF, aes(x = abs(hap_junction_usage_shift) * 100, y = variant_class,
+    color = variant_class), stroke = NA, alpha = 0.8, width = 0, height = 0.05) + theme_bw() + 
+    xlab("Outlier shift in splice junction usage frequency (%)") + theme(panel.background = element_blank(), 
     axis.text = element_text(color = "black", size = 6), axis.title.x = element_text(color = "black", size = 7), axis.title.y = element_blank(), 
-    axis.ticks = element_line(color = "black", linewidth = 0.25), legend.position = "none") + scale_color_manual(values = palette) + 
-    geom_vline(xintercept = 5, linewidth = 0.25, linetype = "dashed", color = "black") + xlim(0, 100)
+    axis.ticks = element_line(color = "black", linewidth = 0.25), legend.position = "none") + scale_color_manual(values = palette) 
 
 # =====================================================================================================================
 #                                                      PANEL B
@@ -70,14 +64,11 @@ inDF$Category <- factor(ifelse(inDF$spliceai > 0.1, "Splice-disrupting", "Not sp
 #
 #   p-value = 1.190e-06
 
-p2 <- ggplot() + geom_boxplot(data = inDF %>% drop_na, aes(x = abs(hap_junction_usage_shift) * 100, y = Category), linewidth = 0.5, width = 0.5, alpha = 0.5,
-    color = "black", outlier.shape = NA) + geom_jitter(data = inDF %>% drop_na %>% filter(Minor), aes(x = abs(hap_junction_usage_shift) * 100, y = Category), 
-    color = "#BFBFBF", stroke = NA, alpha = 0.5, width = 0, height = 0.1) + geom_jitter(data = inDF %>% drop_na %>% filter(!Minor), 
-    aes(x = abs(hap_junction_usage_shift) * 100, y = Category), color = "#DF5C79", stroke = NA, alpha = 0.8, width = 0, height = 0.1) +
-    theme_bw() + xlab("Outlier shift in splice junction usage frequency (%)") + theme(panel.background = element_blank(), 
-    axis.text = element_text(color = "black", size = 6), axis.title.x = element_text(color = "black", size = 7), axis.title.y = element_blank(), 
-    axis.ticks = element_line(color = "black", linewidth = 0.25), legend.position = "none") + geom_vline(xintercept = 5, linewidth = 0.25, 
-    linetype = "dashed", color = "black") + xlim(0, 100)
+p2 <- ggplot() + geom_violin(data = inDF %>% drop_na, aes(x = abs(hap_junction_usage_shift) * 100, y = Category), linewidth = 0.5, 
+    color = "black") + geom_jitter(data = inDF %>% drop_na, aes(x = abs(hap_junction_usage_shift) * 100, y = Category), stroke = NA, alpha = 0.8, 
+    color = "#DF5C79", width = 0, height = 0.05) + theme_bw() + xlab("Outlier shift in splice junction usage frequency (%)") + 
+    theme(panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), axis.title.x = element_text(color = "black", size = 7), 
+    axis.title.y = element_blank(), axis.ticks = element_line(color = "black", linewidth = 0.25), legend.position = "none") + scale_color_manual(values = palette) 
 
 # Assemble p1 and p2 onto the same plotting grid
 p <- plot_grid(p1, p2, ncol = 1, rel_heights = c(2.5, 1), labels = c("a", "b"), label_size = 8, align = "v")
