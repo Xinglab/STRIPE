@@ -5,6 +5,9 @@
 # Supplementary Figure 6
 
 # Minor haplotype expression ratios for genes with heterozygous pathogenic variants in previously diagnosed patients.
+# Minor haplotype expression ratios for genes with heterozygous pathogenic variants in previously diagnosed patients. 
+# The minor haplotype expression ratio is calculated as the haplotype with fewer reads divided by the total number of 
+# reads across both haplotypes. Minor haplotypes are organized based on the class of variants that they carry. 
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
