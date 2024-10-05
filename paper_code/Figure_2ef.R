@@ -6,7 +6,7 @@
 
 # (e) Full-length structures and (f) isoform-level proportions of EARS2 transcripts detected from TEQUILA-seq data of 
 # individuals in our study cohort. Shaded and unshaded regions within transcript structures represent putative coding 
-# sequences and untranslated regions respectively. The arrow in (f) points to individual BS2-1 (haplotype 1). 
+# sequences and untranslated regions respectively.
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
