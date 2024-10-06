@@ -56,7 +56,7 @@ gencode.gtf <- "/scr1/users/wangr5/references/gencode.v45.annotation.gtf"
 outfile <- file.path(workdir, "manuscript/Main_Figures/Figure_3/Figure_3de.pdf")
 
 # =====================================================================================================================
-#                                                      PANEL E
+#                                                      PANEL D
 # =====================================================================================================================
 
 # Create a temporary directory in the folder for Figure 3
@@ -134,7 +134,7 @@ p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xm
     panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none") + scale_fill_manual(values = rev(palette))
 
 # =====================================================================================================================
-#                                                      PANEL F
+#                                                      PANEL E
 # =====================================================================================================================
 
 propDF <- gather(propMatrix, "Sample_ID", "Proportion", -Transcript_ID)
