@@ -173,7 +173,7 @@ p2 <- ggplot(propDF %>% mutate(Transcript_ID = factor(recode(Transcript_ID, !!!s
     gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), levels = c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
     !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
     unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))), aes(x = Proportion, y = Sample_ID, fill = Transcript_ID)) + 
-    geom_bar(stat = "identity", position = "stack", color = NA) + theme_classic() + xlab("Isoform proportion (PIGQ)") + 
+    geom_bar(stat = "identity", position = "stack", color = NA) + theme_classic() + xlab("Isoform proportion (PIGN)") + 
     theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.title.y = element_blank(), axis.ticks.x = element_line(color = "black", 
     linewidth = 0.25), axis.text.x = element_text(color = "black", size = 6), axis.title.x = element_text(color = "black", size = 7), legend.text = 
     element_text(color = "black", size = 6), legend.title = element_blank(), legend.key.size = unit(0.3, "cm"),
