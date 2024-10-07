@@ -84,51 +84,50 @@ for (sample.id in cohort.samples) {
 }
 
 # Compare each sample-specific GTF file to existing GENCODE annotations
-ref_transcripts <- c()
-novel_transcripts <- c()
-gtfDF <- tibble(Transcript_ID = character(), V3 = character(), V4 = integer(), V5 = integer())
 tpmDF <- tibble(Transcript_ID = character())
 
+system(paste("cp", file.path(dirname(outfile1), "tmp/gene.gtf"), file.path(dirname(outfile1), "tmp/reference.gtf")))
+current.ref <- file.path(dirname(outfile1), "tmp/reference.gtf")
 for (sample.id in c("CDG-147-1", cohort.samples)) {
-    system(paste(gffcompare, "-r", file.path(dirname(outfile1), "tmp/gene.gtf"), "-o", file.path(dirname(outfile1), "tmp", sample.id, "gffcmp"), 
+    system(paste(gffcompare, "-r", current.ref, "-o", file.path(dirname(outfile1), "tmp", sample.id, "gffcmp"), 
         file.path(dirname(outfile1), "tmp", sample.id, "output.gtf")), ignore.stdout = TRUE, ignore.stderr = TRUE)
-    system(paste("python /scr1/users/wangr5/tools/Annotate_ORF.py -i", file.path(dirname(outfile1), "tmp", sample.id, 
-        "gffcmp.annotated.gtf"), "-a", file.path(dirname(outfile1), "tmp/gene.gtf"), "-f /scr1/users/wangr5/references/GRCh38.primary_assembly.genome.fa",
-        "-o", file.path(dirname(outfile1), "tmp", sample.id, "gffcmp.annotated.updated.gtf")))
     sampleDF <- read.table(file.path(dirname(outfile1), "tmp", sample.id, "output.gtf"), sep = "\t", header = FALSE, comment = "#") %>%
         filter(V3 == "transcript") %>% mutate(Transcript_ID = unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "transcript_id")))),
         TPM = as.numeric(unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "TPM")))))) %>% select(Transcript_ID, TPM) %>% tibble
     mappingDF <- read.table(file.path(dirname(outfile1), "tmp", sample.id, "gffcmp.tracking"), sep = "\t", header = FALSE) %>%
-        separate(V3, c(NA, "Ref_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") 
-    ref_transcripts <- c(ref_transcripts, mappingDF %>% filter(V4 %in% c("=", "c")) %>% pull(Ref_Transcript_ID))
-    bad_transcripts <- mappingDF %>% filter(V4 %in% c("s", "x", "p", "e", "r", "u")) %>% pull(Transcript_ID)
-    novel_transcripts <- c(novel_transcripts, mappingDF %>% filter(!(V4 %in% c("=", "c", "s", "x", "p", "e", "r", "u"))) %>% pull(Transcript_ID))
-    mappingDF <- mutate(mappingDF, New_ID = ifelse(V4 %in% c("=", "c"), Ref_Transcript_ID, ifelse(Transcript_ID %in% bad_transcripts, "Other", Transcript_ID)))
-    gtfDF <- bind_rows(gtfDF, read.table(file.path(dirname(outfile1), "tmp", sample.id, "gffcmp.annotated.updated.gtf"), sep = "\t", header = FALSE, 
-        comment = "#") %>% mutate(Transcript_ID = unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "transcript_id"))))) %>%
-        filter(Transcript_ID %in% novel_transcripts) %>% select(Transcript_ID, V3, V4, V5))
+        separate(V3, c(NA, "Ref_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") %>%
+        filter(!(V4 %in% c("s", "x", "p", "e", "r", "u", "c"))) %>% mutate(New_ID = ifelse(V4 == "=", Ref_Transcript_ID, Transcript_ID))
     sampleDF <- mutate(sampleDF, New_ID = recode(Transcript_ID, !!!setNames(mappingDF$New_ID, mappingDF$Transcript_ID), .default = "Other")) %>%
         select(New_ID, TPM) %>% group_by(New_ID) %>% summarise(TPM = sum(TPM)) %>% ungroup %>% setNames(c("Transcript_ID", sample.id))
     tpmDF <- full_join(tpmDF, sampleDF, by = join_by(Transcript_ID)) %>% replace(is.na(.), 0)
+    novel_transcripts <- mappingDF %>% filter(!(V4 %in% c("s", "x", "p", "e", "r", "u", "=", "c"))) %>% pull(New_ID)
+    if(length(novel_transcripts) > 0){
+        system(paste("grep -E", paste("\"", paste(paste("\"", novel_transcripts, "\"", sep = ""), collapse = "|"), "\"", sep = ""), file.path(dirname(outfile1), "tmp", sample.id, 
+            "gffcmp.annotated.gtf"), ">>", current.ref))
+    }
 }
+
+system(paste("tail -n +2", current.ref, ">", paste(current.ref, "tmp", sep = ".")))
+system(paste("python /scr1/users/wangr5/tools/Annotate_ORF.py -i", paste(current.ref, "tmp", sep = "."), "-a", file.path(dirname(outfile1), "tmp/gene.gtf"), 
+    "-f /scr1/users/wangr5/references/GRCh38.primary_assembly.genome.fa", "-o", file.path(dirname(outfile1), "tmp/reference.updated.gtf")))
 
 # Convert TPM matrix into a proportion matrix and identify transcripts that:
 #   * Have an isoform-level proportion of at least 5% in sample of interest
-#   * Have an isoform-level proportion of at least 5% in at least three samples among remaining cohort individuals
+#   * Have an isoform-level proportion of at least 5% in at least five samples among remaining cohort individuals
 propMatrix <- bind_cols(tpmDF[,1], sweep(tpmDF[,-1], 2, colSums(tpmDF[,-1]), `/`))
 keepTranscripts <- unique(c(propMatrix$Transcript_ID[propMatrix[,2] >= 0.05],
-    propMatrix$Transcript_ID[rowSums(propMatrix[,-c(1,2)] >= 0.05) >= 3]))
+    propMatrix$Transcript_ID[rowSums(propMatrix[,-c(1,2)] >= 0.05) >= 5]))
+keepTranscripts <- keepTranscripts[!grepl("Other", keepTranscripts)]
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
 
 # Rescale features in gtfDF
-gtfDF <- bind_rows(gtfDF, read.table(file.path(dirname(outfile1), "tmp/gene.gtf"), sep = "\t", header = FALSE, comment = "#") %>%
+gtfDF <- read.table(file.path(dirname(outfile1), "tmp/reference.updated.gtf"), sep = "\t", header = FALSE, comment = "#") %>%
     mutate(Transcript_ID = unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "transcript_id"))))) %>%
-    filter(Transcript_ID %in% ref_transcripts) %>% select(Transcript_ID, V3, V4, V5)) %>% filter(Transcript_ID %in% keepTranscripts) %>%
+    filter(Transcript_ID %in% keepTranscripts) %>% select(Transcript_ID, V3, V4, V5) %>%
     arrange(Transcript_ID, V4, V5)
 gtfDF <- mutate(gtfDF, V3 = case_when(!(Transcript_ID %in% unique(filter(gtfDF, V3 == "CDS") %>% 
-    pull(Transcript_ID))) & V3 == "exon" ~ "UTR", TRUE ~ V3)) %>% filter(V3 %in% c("UTR", "CDS")) %>%
-    mutate(V4 = V4 - 1)
+    pull(Transcript_ID))) & V3 == "exon" ~ "UTR", TRUE ~ V3)) %>% filter(V3 %in% c("UTR", "CDS")) %>% mutate(V4 = V4 - 1)
 oldCoord <- sort(unique(c(pull(gtfDF, V4), pull(gtfDF, V5))))
 newCoord <- cumsum(c(0, RescaleFeature(tail(oldCoord, -1) - head(oldCoord, -1))))
 gtfDF <- mutate(gtfDF, V4 = recode(V4, !!!setNames(newCoord, oldCoord))/max(newCoord), V5 = recode(V5, !!!setNames(newCoord, oldCoord))/max(newCoord), 
@@ -137,16 +136,16 @@ intronDF <- GetIntrons(gtfDF, keepTranscripts)
 utrDF <- filter(gtfDF, V3 == "UTR")
 cdsDF <- filter(gtfDF, V3 == "CDS")
 labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% mutate(Transcript_ID = recode(Transcript_ID, !!!setNames( 
-    paste("NovelTx", 1:length(novel_transcripts), sep = "."), novel_transcripts)))
+    paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-newTxAssign <- setNames(seq(length(keepTranscripts),1), c(2,8,9,1,4,7,3,14,12,11,10,13,6,5))
+newTxAssign <- setNames(seq(length(keepTranscripts),1), c(3,8,9,2,5,7,4,1,14,12,11,10,13,6))
 intronDF <- mutate(intronDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 utrDF <- mutate(utrDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 cdsDF <- mutate(cdsDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 labelDF <- mutate(labelDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 
-palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#6BC2B7", "#99D7A6", "#FCB93F", "#FAAC90",
-    "#F97D5F", "#F7523A", "#E82322", "#8C86BC", "#6D67AC"), seq(length(keepTranscripts), 1))
+palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#6BC2B7", "#99D7A6", "#C2E8B9", "#FCB93F", "#FAAC90",
+    "#F97D5F", "#F7523A", "#E82322", "#8C86BC"), seq(length(keepTranscripts), 1))
 p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xmax = 1 - utrDF$V5, ymin = utrDF$Transcript_Number - 0.25,
     ymax = utrDF$Transcript_Number + 0.25, color = "black", linewidth = 0.5) + geom_rect(data = cdsDF %>% mutate(Transcript_Number = factor(Transcript_Number)), 
     aes(fill = Transcript_Number), xmin = 1 - cdsDF$V4, xmax = 1 - cdsDF$V5, ymin = cdsDF$Transcript_Number - 0.25, ymax = cdsDF$Transcript_Number + 0.25, 
@@ -166,13 +165,15 @@ propDF <- gather(propMatrix, "Sample_ID", "Proportion", -Transcript_ID)
 sampleOrder <- propDF %>% filter(Transcript_ID == "CDG-147-1.1.3") %>% arrange(Proportion) %>% pull(Sample_ID)
 propDF$Sample_ID <- factor(propDF$Sample_ID, levels = sampleOrder)
 
-palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#6BC2B7", "#99D7A6", "#FCB93F", "#FAAC90",
-    "#F97D5F", "#F7523A", "#E82322", "#8C86BC", "#6D67AC", "#BDBDBD"), c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
-    !!!setNames(paste("NovelTx", 1:length(novel_transcripts), sep = "."), novel_transcripts)), "Other"))
-p2 <- ggplot(propDF %>% mutate(Transcript_ID = factor(recode(Transcript_ID, !!!setNames(paste("NovelTx", 1:length(novel_transcripts), 
-    sep = "."), novel_transcripts)), levels = c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
-    !!!setNames(paste("NovelTx", 1:length(novel_transcripts), sep = "."), novel_transcripts)), "Other"))), aes(x = Proportion, y = Sample_ID, 
-    fill = Transcript_ID)) + geom_bar(stat = "identity", position = "stack", color = NA) + theme_classic() + xlab("Isoform proportion (PIGQ)") + 
+palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#6BC2B7", "#99D7A6", "#C2E8B9", "#FCB93F", "#FAAC90",
+    "#F97D5F", "#F7523A", "#E82322", "#8C86BC", "#BDBDBD"), c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
+    !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
+    unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))
+p2 <- ggplot(propDF %>% mutate(Transcript_ID = factor(recode(Transcript_ID, !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", 
+    gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), levels = c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
+    !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
+    unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))), aes(x = Proportion, y = Sample_ID, fill = Transcript_ID)) + 
+    geom_bar(stat = "identity", position = "stack", color = NA) + theme_classic() + xlab("Isoform proportion (PIGQ)") + 
     theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.title.y = element_blank(), axis.ticks.x = element_line(color = "black", 
     linewidth = 0.25), axis.text.x = element_text(color = "black", size = 6), axis.title.x = element_text(color = "black", size = 7), legend.text = 
     element_text(color = "black", size = 6), legend.title = element_blank(), legend.key.size = unit(0.3, "cm"),
