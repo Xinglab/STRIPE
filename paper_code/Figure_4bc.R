@@ -85,7 +85,7 @@ for (sample.id in cohort.samples) {
 
 # Merge output files from stringtie
 system(paste(stringtie, "--merge -G", file.path(dirname(outfile1), "tmp/gene.gtf"), "-o", file.path(dirname(outfile1), "tmp/merged.gtf"),
-    "-i", file.path(dirname(outfile1), "tmp", c("CDG-132-1", cohort.samples), "output.gtf")))
+    "-i", file.path(dirname(outfile1), "tmp", "CDG-132-1", "output.gtf")))
 system(paste("python /scr1/users/wangr5/tools/Annotate_ORF.py -i", file.path(dirname(outfile1), "tmp/merged.gtf"),
     "-a", file.path(dirname(outfile1), "tmp/gene.gtf"), "-f /scr1/users/wangr5/references/GRCh38.primary_assembly.genome.fa",
     "-o", file.path(dirname(outfile1), "tmp/merged.updated.gtf")))
@@ -102,7 +102,7 @@ for (sample.id in c("CDG-132-1", cohort.samples)) {
         filter(V3 == "transcript") %>% mutate(Transcript_ID = unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "transcript_id")))),
         TPM = as.numeric(unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "TPM")))))) %>% select(Transcript_ID, TPM) %>% tibble
     mappingDF <- read.table(file.path(dirname(outfile1), "tmp", sample.id, "gffcmp.tracking"), sep = "\t", header = FALSE) %>%
-        separate(V3, c(NA, "Merge_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|")
+        separate(V3, c(NA, "Merge_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") 
     sampleDF <- mutate(sampleDF, New_ID = recode(Transcript_ID, !!!setNames(mappingDF$Merge_Transcript_ID, mappingDF$Transcript_ID), .default = "Other")) %>%
         select(New_ID, TPM) %>% group_by(New_ID) %>% summarise(TPM = sum(TPM)) %>% ungroup %>% setNames(c("Transcript_ID", sample.id))
     outDF <- left_join(outDF, sampleDF, by = join_by(Transcript_ID)) %>% replace(is.na(.), 0)
