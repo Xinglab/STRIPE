@@ -69,7 +69,7 @@ system(paste("grep \"", target.gene$V4, "\" ", gencode.gtf, " > ", file.path(dir
 # Run stringtie on haplotype-specific BAM file for CDG-147-1
 dir.create(file.path(dirname(outfile1), "tmp/CDG-147-1"), showWarnings = FALSE)
 system(paste(stringtie, file.path(workdir, "CDG/CDG-147-1/RNA/stripe/target_genes/PIGN/hap1_reads.bam"), "-G", 
-    file.path(dirname(outfile1), "tmp/gene.gtf"), "-o", file.path(dirname(outfile1), "tmp/CDG-147-1/output.gtf"), "-L -E 10 -s 5 -c 5 -u -M 0 -l CDG-147-1"))
+    file.path(dirname(outfile1), "tmp/gene.gtf"), "-o", file.path(dirname(outfile1), "tmp/CDG-147-1/output.gtf"), "-L -s 5 -c 5 -u -M 0 -l CDG-147-1"))
 
 # Run stringtie on TEQUILA-seq BAM files for other cohort samples
 cohort.samples <- read.table(file.path(workdir, "CDG/samples.txt"), sep = "\t", header = TRUE) %>% filter(Provider != "Lan Lin" &
@@ -80,7 +80,7 @@ for (sample.id in cohort.samples) {
         paste(target.gene$V1, ":", target.gene$V2+1, "-", target.gene$V3, sep = ""), " > ", file.path(dirname(outfile1), "tmp", sample.id, "input.bam")))
     system(paste(samtools, "index", file.path(dirname(outfile1), "tmp", sample.id, "input.bam")))
     system(paste(stringtie, file.path(dirname(outfile1), "tmp", sample.id, "input.bam"), "-G", file.path(dirname(outfile1), "tmp/gene.gtf"), "-o", 
-        file.path(dirname(outfile1), "tmp", sample.id, "output.gtf"), "-L -E 10 -s 5 -c 5 -u -M 0 -l", sample.id))
+        file.path(dirname(outfile1), "tmp", sample.id, "output.gtf"), "-L -s 5 -c 5 -u -M 0 -l", sample.id))
 }
 
 # Compare each sample-specific GTF file to existing GENCODE annotations
@@ -138,14 +138,14 @@ cdsDF <- filter(gtfDF, V3 == "CDS")
 labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% mutate(Transcript_ID = recode(Transcript_ID, !!!setNames( 
     paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-newTxAssign <- setNames(seq(length(keepTranscripts),1), c(3,8,9,2,5,7,4,1,14,12,11,10,13,6))
+newTxAssign <- setNames(seq(length(keepTranscripts),1), c(3,9,10,4,6,8,5,2,15,13,12,11,14,7,1))
 intronDF <- mutate(intronDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 utrDF <- mutate(utrDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 cdsDF <- mutate(cdsDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 labelDF <- mutate(labelDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 
 palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#6BC2B7", "#99D7A6", "#C2E8B9", "#FCB93F", "#FAAC90",
-    "#F97D5F", "#F7523A", "#E82322", "#8C86BC"), seq(length(keepTranscripts), 1))
+    "#F97D5F", "#F7523A", "#E82322", "#8C86BC", "#CFD1E6"), seq(length(keepTranscripts), 1))
 p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xmax = 1 - utrDF$V5, ymin = utrDF$Transcript_Number - 0.25,
     ymax = utrDF$Transcript_Number + 0.25, color = "black", linewidth = 0.5) + geom_rect(data = cdsDF %>% mutate(Transcript_Number = factor(Transcript_Number)), 
     aes(fill = Transcript_Number), xmin = 1 - cdsDF$V4, xmax = 1 - cdsDF$V5, ymin = cdsDF$Transcript_Number - 0.25, ymax = cdsDF$Transcript_Number + 0.25, 
@@ -166,7 +166,7 @@ sampleOrder <- propDF %>% filter(Transcript_ID == "CDG-147-1.1.3") %>% arrange(P
 propDF$Sample_ID <- factor(propDF$Sample_ID, levels = sampleOrder)
 
 palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#6BC2B7", "#99D7A6", "#C2E8B9", "#FCB93F", "#FAAC90",
-    "#F97D5F", "#F7523A", "#E82322", "#8C86BC", "#BDBDBD"), c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
+    "#F97D5F", "#F7523A", "#E82322", "#8C86BC", "#CFD1E6", "#BDBDBD"), c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
     !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
     unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))
 p2 <- ggplot(propDF %>% mutate(Transcript_ID = factor(recode(Transcript_ID, !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", 
