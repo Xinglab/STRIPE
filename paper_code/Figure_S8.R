@@ -54,7 +54,8 @@ p1 <- ggplot() + geom_boxplot(data = inDF, aes(x = abs(hap_junction_usage_shift)
     linewidth = 0.5, color = "black", width = 0.5, outlier.alpha = 0.8, outlier.stroke = NA) + theme_bw() +
     xlab("Outlier shift in splice junction usage frequency (%)") + theme(panel.background = element_blank(), 
     axis.text = element_text(color = "black", size = 6), axis.title.x = element_text(color = "black", size = 7), axis.title.y = element_blank(), 
-    axis.ticks = element_line(color = "black", linewidth = 0.25), legend.position = "none") + scale_fill_manual(values = c("#7E5D81", "#BDCEDB"))
+    axis.ticks = element_line(color = "black", linewidth = 0.25), legend.position = "none") + scale_fill_manual(values = c("#7E5D81", "#BDCEDB")) +
+    coord_cartesian(xlim = c(0, 100))
 
 # =====================================================================================================================
 #                                                      PANEL B
@@ -76,7 +77,7 @@ p2 <- ggplot() + geom_boxplot(data = inDF %>% drop_na, aes(x = abs(hap_junction_
     xlab("Outlier shift in splice junction usage frequency (%)") + theme(panel.background = element_blank(), 
     axis.text = element_text(color = "black", size = 6), axis.title.x = element_text(color = "black", size = 7), axis.title.y = element_blank(), 
     axis.ticks = element_line(color = "black", linewidth = 0.25), legend.position = "bottom", legend.title = element_blank(),
-    legend.text = element_text(color = "black", size = 6)) + scale_fill_manual(values = c("#7E5D81", "#BDCEDB"))
+    legend.text = element_text(color = "black", size = 6)) + scale_fill_manual(values = c("#7E5D81", "#BDCEDB")) + coord_cartesian(xlim = c(0, 100))
 
 # Assemble p1 and p2 onto the same plotting grid
 p <- plot_grid(p1, p2, ncol = 1, rel_heights = c(1.5, 1), labels = c("a", "b"), label_size = 8, align = "v")
