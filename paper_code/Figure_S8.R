@@ -10,6 +10,7 @@
 # Splice junctions supported by at least 20 haplotype-resolved reads in a given sample are displayed and organized based on whether 
 # they are proximal (i.e. within 100 bp) or distal to known disease-causing variants in cis. (b) Same as in (a) but 
 # organized based on whether a variant is predicted to impact splicing (i.e. SpliceAI score > 0.1) rather than variant class. 
+# P value calculated from a Wilcoxon rank-sum test. 
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
