@@ -17,6 +17,7 @@ suppressMessages(library(dplyr))
 suppressMessages(library(ggplot2))
 suppressMessages(library(tidyr))
 suppressMessages(library(cowplot))
+suppressMessages(library(RColorBrewer))
 
 # =====================================================================================================================
 #                                                   HELPER FUNCTIONS
@@ -102,6 +103,15 @@ for (sample.id in c("AnJa", "CDG-161-1", cohort.samples)) {
     mappingDF <- read.table(file.path(dirname(outfile), "tmp", sample.id, "gffcmp.tracking"), sep = "\t", header = FALSE) %>%
         separate(V3, c(NA, "Ref_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") %>%
         filter(!(V4 %in% c("s", "x", "p", "e", "r", "u", "c"))) %>% mutate(New_ID = ifelse(V4 == "=", Ref_Transcript_ID, Transcript_ID))
+    if (sample.id %in% c("AnJa", "CDG-161-1")) {
+        mappingDF <- read.table(file.path(dirname(outfile), "tmp", sample.id, "gffcmp.tracking"), sep = "\t", header = FALSE) %>%
+            separate(V3, c(NA, "Ref_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") %>%
+            filter(!(V4 %in% c("s", "x", "p", "e", "r", "u", "c"))) %>% mutate(New_ID = ifelse(V4 == "=", Ref_Transcript_ID, Transcript_ID))
+    } else {
+        mappingDF <- read.table(file.path(dirname(outfile), "tmp", sample.id, "gffcmp.tracking"), sep = "\t", header = FALSE) %>%
+            separate(V3, c(NA, "Ref_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") %>%
+            filter(!(V4 %in% c("s", "x", "p", "e", "r", "u"))) %>% mutate(New_ID = ifelse(V4 %in% c("=", "c"), Ref_Transcript_ID, Transcript_ID))
+    }
     sampleDF <- mutate(sampleDF, New_ID = recode(Transcript_ID, !!!setNames(mappingDF$New_ID, mappingDF$Transcript_ID), .default = "Other")) %>%
         select(New_ID, TPM) %>% group_by(New_ID) %>% summarise(TPM = sum(TPM)) %>% ungroup %>% setNames(c("Transcript_ID", sample.id))
     tpmDF <- full_join(tpmDF, sampleDF, by = join_by(Transcript_ID)) %>% replace(is.na(.), 0)
@@ -116,12 +126,10 @@ system(paste("tail -n +2", current.ref, ">", paste(current.ref, "tmp", sep = "."
 system(paste("python /scr1/users/wangr5/tools/Annotate_ORF.py -i", paste(current.ref, "tmp", sep = "."), "-a", file.path(dirname(outfile), "tmp/gene.gtf"), 
     "-f /scr1/users/wangr5/references/GRCh38.primary_assembly.genome.fa", "-o", file.path(dirname(outfile), "tmp/reference.updated.gtf")))
 
-# Convert TPM matrix into a proportion matrix and identify transcripts that:
-#   * Have an isoform-level proportion of at least 5% in both samples of interest
-#   * Have an isoform-level proportion of at least 5% in at least five samples among remaining cohort individuals
+# Convert TPM matrix into a proportion matrix
 propMatrix <- bind_cols(tpmDF[,1], sweep(tpmDF[,-1], 2, colSums(tpmDF[,-1]), `/`))
 keepTranscripts <- unique(c(propMatrix$Transcript_ID[propMatrix[,2] >= 0.05 & propMatrix[,3] >= 0.05],
-    propMatrix$Transcript_ID[rowSums(propMatrix[,-c(1:3)] >= 0.05) >= 5]))
+    propMatrix$Transcript_ID[rowSums(propMatrix[,-c(1:3)] >= 0.1) >= 1]))
 keepTranscripts <- keepTranscripts[!grepl("Other", keepTranscripts)]
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
@@ -143,14 +151,14 @@ cdsDF <- filter(gtfDF, V3 == "CDS")
 labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% mutate(Transcript_ID = recode(Transcript_ID, !!!setNames( 
     paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-newTxAssign <- setNames(seq(length(keepTranscripts),1), c(1,6,4,5,2,11,8,7,9,10,3))
+newTxAssign <- setNames(seq(length(keepTranscripts),1), c(2,8,6,3,7,13,10,9,11,12,1,5,4))
 intronDF <- mutate(intronDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 utrDF <- mutate(utrDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 cdsDF <- mutate(cdsDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 labelDF <- mutate(labelDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 
-palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#FCB93F", "#FAAC90",
-    "#F97D5F", "#F7523A", "#E82322", "#8C86BC"), seq(length(keepTranscripts), 1))
+palette <- setNames(c(brewer.pal(9, "Blues")[7:4], brewer.pal(9, "YlOrBr")[4:3], brewer.pal(9, "Reds")[3:6], brewer.pal(9, "Purples")[6:4], "#BDBDBD"), 
+    seq(length(keepTranscripts), 1))
 p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xmax = 1 - utrDF$V5, ymin = utrDF$Transcript_Number - 0.25,
     ymax = utrDF$Transcript_Number + 0.25, color = "black", linewidth = 0.5) + geom_rect(data = cdsDF %>% mutate(Transcript_Number = factor(Transcript_Number)), 
     aes(fill = Transcript_Number), xmin = 1 - cdsDF$V4, xmax = 1 - cdsDF$V5, ymin = cdsDF$Transcript_Number - 0.25, ymax = cdsDF$Transcript_Number + 0.25, 
@@ -165,14 +173,14 @@ p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xm
 # =====================================================================================================================
 
 propDF <- gather(propMatrix, "Sample_ID", "Proportion", -Transcript_ID)
-sampleOrder <- propDF %>% filter(Transcript_ID %in% c("AnJa.1.1", "AnJa.1.10", "AnJa.1.12", "ENST00000589339.6", "ENST00000638329.1")) %>% 
-    group_by(Sample_ID) %>% summarise(Proportion = sum(Proportion)) %>% ungroup %>% arrange(desc(Proportion)) %>% pull(Sample_ID)
+sortTx <- c(as.character(setNames(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]), paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", 
+    gtfDF$Transcript_ID)])), sep = "."))[c("NovelTx.1", "NovelTx.3", "NovelTx.2")]), "ENST00000638369.1", "ENST00000589339.6", "ENST00000638329.1")
+sampleOrder <- propDF %>% filter(Transcript_ID %in% sortTx) %>% group_by(Sample_ID) %>% summarise(Proportion = sum(Proportion)) %>%
+    ungroup %>% arrange(desc(Proportion)) %>% pull(Sample_ID)
 propDF$Sample_ID <- factor(propDF$Sample_ID, levels = sampleOrder)
 
-palette <- setNames(c("#1C5BA6", "#357EB9", "#5A9ECC", "#8EBEDA", "#BAD2EB", "#FCB93F", "#FAAC90",
-    "#F97D5F", "#F7523A", "#E82322", "#8C86BC", "#BDBDBD"), c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
-    !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
-    unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))
+palette <- setNames(c(brewer.pal(9, "Blues")[7:4], brewer.pal(9, "YlOrBr")[4:3], brewer.pal(9, "Reds")[3:6], brewer.pal(9, "Purples")[6:4], "#BDBDBD"), c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
+    !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))
 p2 <- ggplot(propDF %>% mutate(Transcript_ID = factor(recode(Transcript_ID, !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", 
     gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), levels = c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
     !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
