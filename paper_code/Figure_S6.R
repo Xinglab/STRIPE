@@ -4,7 +4,6 @@
 # Date: 2024.10.03
 # Supplementary Figure 6
 
-# Minor haplotype expression ratios for genes with heterozygous pathogenic variants in previously diagnosed patients.
 # Minor haplotype expression ratios for genes with heterozygous pathogenic variants in previously diagnosed patients. 
 # The minor haplotype expression ratio is calculated as the haplotype with fewer reads divided by the total number of 
 # reads across both haplotypes. Minor haplotypes are organized based on the class of variants that they carry. 
@@ -40,8 +39,7 @@ palette <- setNames(c("#F7A63D", "#63BA96", "#4C78B9", "#88CCEE", "#CE90BE", "#9
     c("Missense", "Synonymous", "Splice donor", "Splice acceptor", "Inframe deletion", "Frameshift duplication", 
     "Nonsense", "Structural deletion"))
 
-p <- ggplot() + geom_boxplot(data = inDF, aes(x = minor_ratio * 100, y = minor_class), linewidth = 0.5, width = 0.5, alpha = 0.5, color = "black") + 
-    geom_jitter(data = inDF, aes(x = minor_ratio * 100, y = minor_class, color = minor_class), stroke = NA, alpha = 0.8, width = 0, height = 0.1)  + 
+p <- ggplot() + geom_jitter(data = inDF, aes(x = minor_ratio * 100, y = minor_class, color = minor_class), stroke = NA, alpha = 0.8, width = 0, height = 0.15)  + 
     theme_bw() + xlab("Minor haplotype expression ratio (%)") + theme(panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
     axis.title.x = element_text(color = "black", size = 7), axis.title.y = element_blank(), axis.ticks = element_line(color = "black", linewidth = 0.25), 
     legend.position = "none") + coord_cartesian(xlim = c(0, 50)) + scale_color_manual(values = palette)
