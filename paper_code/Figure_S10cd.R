@@ -69,12 +69,12 @@ system(paste("grep \"", target.gene$V4, "\" ", gencode.gtf, " > ", file.path(dir
 # Run stringtie on haplotype-specific BAM file for AnJa
 dir.create(file.path(dirname(outfile), "tmp/AnJa"), showWarnings = FALSE)
 system(paste(stringtie, "/mnt/isilon/lin_lab_share/TEQUILA-Dx/CDG/rna_seq/AnJa/examples/PIGN/hap2_reads.bam", "-G",
-    file.path(dirname(outfile), "tmp/gene.gtf"), "-o", file.path(dirname(outfile), "tmp/AnJa/output.gtf"), "-L -E 10 -s 5 -c 5 -u -M 0 -l AnJa"))
+    file.path(dirname(outfile), "tmp/gene.gtf"), "-o", file.path(dirname(outfile), "tmp/AnJa/output.gtf"), "-L -s 5 -c 5 -u -M 0 -l AnJa"))
 
 # Run stringtie on haplotype-specific BAM file for CDG-161-1
 dir.create(file.path(dirname(outfile), "tmp/CDG-161-1"), showWarnings = FALSE)
 system(paste(stringtie, file.path(workdir, "CDG/CDG-161-1/RNA/stripe/target_genes/PIGN/hap2_reads.bam"), "-G",
-    file.path(dirname(outfile), "tmp/gene.gtf"), "-o", file.path(dirname(outfile), "tmp/CDG-161-1/output.gtf"), "-L -E 10 -s 5 -c 5 -u -M 0 -l CDG-161-1"))
+    file.path(dirname(outfile), "tmp/gene.gtf"), "-o", file.path(dirname(outfile), "tmp/CDG-161-1/output.gtf"), "-L -s 5 -c 5 -u -M 0 -l CDG-161-1"))
 
 # Run stringtie on TEQUILA-seq BAM files for other cohort samples
 cohort.samples <- read.table(file.path(workdir, "CDG/samples.txt"), sep = "\t", header = TRUE) %>% filter(Provider != "Lan Lin" &
@@ -85,7 +85,7 @@ for (sample.id in cohort.samples) {
         paste(target.gene$V1, ":", target.gene$V2+1, "-", target.gene$V3, sep = ""), " > ", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
     system(paste(samtools, "index", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
     system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-G", file.path(dirname(outfile), "tmp/gene.gtf"), "-o", 
-        file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-L -E 10 -s 5 -c 5 -u -M 0 -l", sample.id))
+        file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-L -s 5 -c 5 -u -M 0 -l", sample.id))
 }
 
 # Compare each sample-specific GTF file to existing GENCODE annotations
