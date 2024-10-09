@@ -40,8 +40,8 @@ for patient in cohort:
     for target in targets:
         currdir, mode = workdir + '/CDG/' + patient + '/RNA/stripe/target_genes/' + target, 'all'
         if os.path.isfile(currdir + '/phasing_stats.txt'):
-            # Only use phased reads if phasing quality score is greater than 0.5
-            if pd.read_csv(currdir + '/phasing_stats.txt', sep = '\t', header = None).iloc[0,1] > 0.5:
+            # Only use phased reads if phasing quality score is greater than 0.75
+            if pd.read_csv(currdir + '/phasing_stats.txt', sep = '\t', header = None).iloc[0,1] > 0.75:
                 mode = 'phased'
         if mode == 'phased':
             for i in range(1,3):
@@ -59,7 +59,7 @@ for patient in cohort:
 _, fdr_values, _, _ = multipletests(outDF['p_value'], method = 'fdr_bh')
 filterDF = outDF[fdr_values < 0.01].copy()
 
-# Compute mean and standard deviation in usage frequencies for junctions in filterDF among cohort samples
+# Compute usage frequencies for junctions in filterDF among cohort samples
 sjDF = filterDF[['splice_junction']].drop_duplicates().reset_index(drop = True)
 sjDF[['Chrom', 'Start', 'End']] = sjDF['splice_junction'].str.split(r':|-', expand = True)
 
@@ -75,26 +75,26 @@ for patient in cohort:
         (sjDF['Chrom'] + '_' + sjDF['Start'] + '_' + sjDF['End']).map(juncDict).fillna(0))
     sjDF[patient] = (sjDF['Chrom'] + '_' + sjDF['Start'] + '_' + sjDF['End']).map(juncDict).fillna(0)/coverage.mask(coverage <= 20, np.nan)
 
-sjDF = sjDF[(~sjDF.iloc[:,4:].isna()).sum(axis = 1) >= 30]
-meanUsage = dict(zip(sjDF['splice_junction'], sjDF.iloc[:,4:].mean(axis = 1, skipna = True)))
-sdUsage = dict(zip(sjDF['splice_junction'], sjDF.iloc[:,4:].std(axis = 1, skipna = True)))
+# Iterate over individuals in cohort and filter for junctions meeting the following criteria:
+#   * Usage frequency for splice junction is the highest in a given individual
+#   * Usage frequency for splice junction is twice that of the next highest individual
 
-# Keep junctions with cohort-specific z-score > 3
-filterDF = filterDF[filterDF['splice_junction'].isin(set(meanUsage.keys()))]
-filterDF['cohort_mean'] = filterDF['splice_junction'].map(meanUsage)
-filterDF['z_score'] = (filterDF['junction_usage'] - filterDF['cohort_mean'])/filterDF['splice_junction'].map(sdUsage)
-filterDF = filterDF[filterDF['z_score'] > 3]
+cohort_filter = []
+for patient in cohort:
+    currDF = filterDF[filterDF['patient_id'] == patient]
+    currPSI = dict(zip(sjDF['splice_junction'], sjDF.drop(['splice_junction', 'Chrom', 'Start', 'End', patient], axis = 1).max(axis = 1)))
+    currFilter = ((filterDF[filterDF['patient_id'] == patient]['junction_usage'] > filterDF[filterDF['patient_id'] == patient]['splice_junction'].map(currPSI)) &
+        (filterDF[filterDF['patient_id'] == patient]['junction_usage'] > 2*filterDF[filterDF['patient_id'] == patient]['splice_junction'].map(currPSI)))
+    cohort_filter += list(currFilter)
 
-# Keep junctions called as outliers in no more than one individual and meet the following criteria:
-#   * Usage frequency shift relative to GTEx controls > 10%
-#   * Usage frequency shift relative to other cohort samples > 10%
+filterDF = filterDF[cohort_filter]
+
+# Keep junctions called as outliers in no more than 1 individual and have a usage frequency shift > 20% relative to GTEx controls
 junction_counts = filterDF[['patient_id', 'splice_junction']].drop_duplicates()['splice_junction'].value_counts()
-filterDF = filterDF[filterDF['splice_junction'].isin(set(junction_counts[junction_counts == 1].index))]
-filterDF = filterDF[(filterDF['usage_shift'] > 0.1) & (filterDF['junction_usage'] - filterDF['cohort_mean'] > 0.1)]
+filterDF = filterDF[(filterDF['splice_junction'].isin(set(junction_counts[junction_counts == 1].index))) & (filterDF['usage_shift'] > 0.2)]
 
 # Filter for outlier junctions in undiagnosed patients
 filterDF = filterDF[filterDF['patient_id'].isin(set(undiagnosed))]
 
 # Save filterDF to outfile
-filterDF = filterDF.drop(['cohort_mean', 'z_score'], axis = 1)
 filterDF.to_csv(outfile, sep = '\t', index = False)
