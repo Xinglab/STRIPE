@@ -30,7 +30,7 @@ outDF = pd.DataFrame(columns = ['patient_id', 'gene_panel', 'gene_name', 'varian
     ['cadd', 'spliceai', 'gnomad_af_grpmax_joint', 'gnomad_nhomalt_grpmax_joint', 'clinvar', 'homopolymer',
     'end_distance_pct', 'skipping_frequency'])
 
-# Iterate over variant calling results (STRIPE) for each undiagnosed patient
+# Iterate over variant calling results from STRIPE for each undiagnosed patient
 targets = list(pd.read_csv(workdir + '/CDG/references/target_genes.bed', sep = '\t', header = None)[4])
 sampleDF = pd.read_csv(workdir + '/CDG/samples.txt', sep = '\t', header = 0)
 cohort = list(sampleDF[sampleDF['Provider'] != 'Lan Lin']['ID'])
@@ -50,9 +50,6 @@ for patient in cohort:
                 outDF = pd.concat([outDF, pd.DataFrame([[patient, 'CDG-466', target, item[0] + ':' + str(item[1]) + ' ' + item[2] + '>' + item[3]] + list(item[4:]) 
                     for item in inDF.values], columns = outDF.columns)])
 
-# Drop 'gnomad_nhomalt_grpmax_joint' and 'homopolymer' columns from outDF (these columns are now uninformative)
-outDF = outDF.drop(['gnomad_nhomalt_grpmax_joint', 'homopolymer'], axis = 1)
-
 # Only keep variants that appear in no more than one individual and meet the following criteria:
 #   * Proportion of reads with variant found at end < 0.5
 #   * Proportion of reads skipping variant locus < 0.5
@@ -64,4 +61,5 @@ outDF = outDF[(outDF['end_distance_pct'] < 0.5) & (outDF['skipping_frequency'] <
 outDF = outDF[outDF['patient_id'].isin(set(undiagnosed))]
 
 # Save outDF to outfile
+outDF = outDF.drop(['gnomad_nhomalt_grpmax_joint', 'homopolymer'], axis = 1)
 outDF.to_csv(outfile, sep = '\t', index = False)
