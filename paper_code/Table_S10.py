@@ -30,7 +30,7 @@ outfile = workdir + '/manuscript/Supplementary_Tables/Table_S10/Table_S10.txt'
 outDF = pd.DataFrame(columns = ['patient_id', 'gene_panel', 'gene_name', 'read_group', 'splice_junction', 'junction_count', 
     'junction_coverage', 'junction_usage', 'gtex_usage', 'usage_shift', 'p_value'])
 
-# Iterate over aberrant splice junction results (STRIPE) for each undiagnosed patient
+# Iterate over aberrant splice junction from STRIPE for each undiagnosed patient
 targets = list(pd.read_csv(workdir + '/CDG/references/target_genes.bed', sep = '\t', header = None)[4])
 sampleDF = pd.read_csv(workdir + '/CDG/samples.txt', sep = '\t', header = 0)
 cohort = list(sampleDF[sampleDF['Provider'] != 'Lan Lin']['ID'])
@@ -55,11 +55,11 @@ for patient in cohort:
                 outDF = pd.concat([outDF, pd.DataFrame([[patient, 'CDG-466', target, 'All'] + list(item) for item in 
                     pd.read_csv(infile, sep = '\t', header = 0).values], columns = outDF.columns)])
 
-# Filter outDF for junctions with an FDR-adjusted p-value < 1% (comparison to GTEx controls)
+# Keep junctions with FDR-adjusted p-value < 1%
 _, fdr_values, _, _ = multipletests(outDF['p_value'], method = 'fdr_bh')
 filterDF = outDF[fdr_values < 0.01].copy()
 
-# Compute mean and standard deviation in usage frequencies for unique splice junctions in filterDF among cohort samples
+# Compute mean and standard deviation in usage frequencies for junctions in filterDF among cohort samples
 sjDF = filterDF[['splice_junction']].drop_duplicates().reset_index(drop = True)
 sjDF[['Chrom', 'Start', 'End']] = sjDF['splice_junction'].str.split(r':|-', expand = True)
 
@@ -79,20 +79,22 @@ sjDF = sjDF[(~sjDF.iloc[:,4:].isna()).sum(axis = 1) >= 30]
 meanUsage = dict(zip(sjDF['splice_junction'], sjDF.iloc[:,4:].mean(axis = 1, skipna = True)))
 sdUsage = dict(zip(sjDF['splice_junction'], sjDF.iloc[:,4:].std(axis = 1, skipna = True)))
 
-# Compute cohort-specific z-scores for each junction and only keep those with z-score > 3
+# Keep junctions with cohort-specific z-score > 3
 filterDF = filterDF[filterDF['splice_junction'].isin(set(meanUsage.keys()))]
 filterDF['cohort_mean'] = filterDF['splice_junction'].map(meanUsage)
 filterDF['z_score'] = (filterDF['junction_usage'] - filterDF['cohort_mean'])/filterDF['splice_junction'].map(sdUsage)
 filterDF = filterDF[filterDF['z_score'] > 3]
 
-# Only keep junctions called as an outlier in no more than one individual in the cohort
+# Keep junctions called as outliers in no more than one individual and meet the following criteria:
+#   * Usage frequency shift relative to GTEx controls > 10%
+#   * Usage frequency shift relative to other cohort samples > 10%
 junction_counts = filterDF[['patient_id', 'splice_junction']].drop_duplicates()['splice_junction'].value_counts()
 filterDF = filterDF[filterDF['splice_junction'].isin(set(junction_counts[junction_counts == 1].index))]
-
-# Only keep junctions with a usage shift of at least 10% relative to the mean usage in GTEx controls and cohort samples
 filterDF = filterDF[(filterDF['usage_shift'] > 0.1) & (filterDF['junction_usage'] - filterDF['cohort_mean'] > 0.1)]
+
+# Filter for outlier junctions in undiagnosed patients
+filterDF = filterDF[filterDF['patient_id'].isin(set(undiagnosed))]
 
 # Save filterDF to outfile
 filterDF = filterDF.drop(['cohort_mean', 'z_score'], axis = 1)
-filterDF = filterDF[filterDF['patient_id'].isin(set(undiagnosed))]
 filterDF.to_csv(outfile, sep = '\t', index = False)
