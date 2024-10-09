@@ -77,7 +77,7 @@ for patient in cohort:
 
 # Iterate over individuals in cohort and filter for junctions meeting the following criteria:
 #   * Usage frequency for splice junction is the highest in a given individual
-#   * Usage frequency for splice junction is twice that of the next highest individual
+#   * Usage frequency for splice junction is more than twice that of the next highest individual
 
 cohort_filter = []
 for patient in cohort:
