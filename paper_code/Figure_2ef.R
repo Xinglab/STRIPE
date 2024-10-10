@@ -69,7 +69,7 @@ system(paste("grep \"", target.gene$V4, "\" ", gencode.gtf, " > ", file.path(dir
 
 # Run stringtie on haplotype-specific BAM file for BS2-1
 dir.create(file.path(dirname(outfile), "tmp/BS2-1"), showWarnings = FALSE)
-system(paste(stringtie, file.path(workdir, "PMD/BS2-1/RNA/stripe/target_genes/EARS2/hap1_reads.bam"), "-g",  file.path(dirname(outfile), "tmp/gene.gtf"), 
+system(paste(stringtie, file.path(workdir, "PMD/BS2-1/RNA/stripe/target_genes/EARS2/hap1_reads.bam"), "-G",  file.path(dirname(outfile), "tmp/gene.gtf"), 
     "-o", file.path(dirname(outfile), "tmp/BS2-1/output.gtf"), "-L -s 5 -c 5 -u -M 0 -l BS2-1"))
 
 # Run stringtie on TEQUILA-seq BAM files for other cohort samples
@@ -80,7 +80,7 @@ for (sample.id in cohort.samples) {
     system(paste(samtools, "view -hb -F 256 -q 1", file.path(workdir, "PMD", sample.id, "RNA", paste(sample.id, "TEQUILA.bam", sep = "_")), 
         paste(target.gene$V1, ":", target.gene$V2+1, "-", target.gene$V3, sep = ""), " > ", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
     system(paste(samtools, "index", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
-    system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-g",  file.path(dirname(outfile), "tmp/gene.gtf"), "-o", 
+    system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-G",  file.path(dirname(outfile), "tmp/gene.gtf"), "-o", 
         file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-L -s 5 -c 5 -u -M 0 -l", sample.id))
 }
 
@@ -143,13 +143,13 @@ cdsDF <- filter(gtfDF, V3 == "CDS")
 labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% mutate(Transcript_ID = recode(Transcript_ID, !!!setNames( 
     paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-newTxAssign <- setNames(seq(length(keepTranscripts),1), c(5,4,6,3,2,1,9,8,7))
+newTxAssign <- setNames(seq(length(keepTranscripts),1), c(4,3,1,7,6,5,2))
 intronDF <- mutate(intronDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 utrDF <- mutate(utrDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 cdsDF <- mutate(cdsDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 labelDF <- mutate(labelDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 
-palette <- setNames(c(brewer.pal(9, "Blues")[7:6], brewer.pal(9, "GnBu")[6:3], brewer.pal(9, "Reds")[3:5], "#BDBDBD"), 
+palette <- setNames(c(brewer.pal(9, "Blues")[7:6], brewer.pal(9, "GnBu")[6], brewer.pal(9, "Reds")[3:5], brewer.pal(9, "Purples")[5], "#BDBDBD"), 
     seq(length(keepTranscripts), 1))
 p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xmax = 1 - utrDF$V5, ymin = utrDF$Transcript_Number - 0.25,
     ymax = utrDF$Transcript_Number + 0.25, color = "black", linewidth = 0.5) + geom_rect(data = cdsDF %>% mutate(Transcript_Number = factor(Transcript_Number)), 
@@ -171,7 +171,7 @@ sampleOrder <- propDF %>% filter(Transcript_ID %in% sortTx) %>% group_by(Sample_
     ungroup %>% arrange(desc(Proportion)) %>% pull(Sample_ID)
 propDF$Sample_ID <- factor(propDF$Sample_ID, levels = sampleOrder)
 
-palette <- setNames(c(brewer.pal(9, "Blues")[7:6], brewer.pal(9, "GnBu")[6:3], brewer.pal(9, "Reds")[3:5], "#BDBDBD"), 
+palette <- setNames(c(brewer.pal(9, "Blues")[7:6], brewer.pal(9, "GnBu")[6], brewer.pal(9, "Reds")[3:5], brewer.pal(9, "Purples")[5], "#BDBDBD"), 
     c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
     !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
     unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))
