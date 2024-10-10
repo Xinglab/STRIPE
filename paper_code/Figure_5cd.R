@@ -69,11 +69,11 @@ system(paste("grep \"", target.gene$V4, "\" ", gencode.gtf, " > ", file.path(dir
 
 # Run stringtie on haplotype-specific BAM files for FCDGC-02003
 dir.create(file.path(dirname(outfile), "tmp/FCDGC-02003_1"), showWarnings = FALSE)
-system(paste(stringtie, file.path(workdir, "CDG/FCDGC-02003/RNA/stripe/target_genes/NGLY1/hap1_reads.bam"), "-g",  file.path(dirname(outfile), "tmp/gene.gtf"), 
+system(paste(stringtie, file.path(workdir, "CDG/FCDGC-02003/RNA/stripe/target_genes/NGLY1/hap1_reads.bam"), "-G",  file.path(dirname(outfile), "tmp/gene.gtf"), 
     "-o", file.path(dirname(outfile), "tmp/FCDGC-02003_1/output.gtf"), "-L -s 5 -c 5 -u -M 0 -l FCDGC-02003_1"))
 
 dir.create(file.path(dirname(outfile), "tmp/FCDGC-02003_2"), showWarnings = FALSE)
-system(paste(stringtie, file.path(workdir, "CDG/FCDGC-02003/RNA/stripe/target_genes/NGLY1/hap2_reads.bam"), "-g",  file.path(dirname(outfile), "tmp/gene.gtf"), 
+system(paste(stringtie, file.path(workdir, "CDG/FCDGC-02003/RNA/stripe/target_genes/NGLY1/hap2_reads.bam"), "-G",  file.path(dirname(outfile), "tmp/gene.gtf"), 
     "-o", file.path(dirname(outfile), "tmp/FCDGC-02003_2/output.gtf"), "-L -s 5 -c 5 -u -M 0 -l FCDGC-02003_2"))
 
 # Run stringtie on TEQUILA-seq BAM files for other cohort samples
@@ -84,7 +84,7 @@ for (sample.id in cohort.samples) {
     system(paste(samtools, "view -hb -F 256 -q 1", file.path(workdir, "CDG", sample.id, "RNA", paste(sample.id, "TEQUILA.bam", sep = "_")), 
         paste(target.gene$V1, ":", target.gene$V2+1, "-", target.gene$V3, sep = ""), " > ", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
     system(paste(samtools, "index", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
-    system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-g",  file.path(dirname(outfile), "tmp/gene.gtf"), "-o", 
+    system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-G",  file.path(dirname(outfile), "tmp/gene.gtf"), "-o", 
         file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-L -s 5 -c 5 -u -M 0 -l", sample.id))
 }
 
@@ -147,13 +147,13 @@ cdsDF <- filter(gtfDF, V3 == "CDS")
 labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% mutate(Transcript_ID = recode(Transcript_ID, !!!setNames( 
     paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-newTxAssign <- setNames(seq(length(keepTranscripts),1), c(5,4,2,3,1))
+newTxAssign <- setNames(seq(length(keepTranscripts),1), c(3,2,1))
 intronDF <- mutate(intronDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 utrDF <- mutate(utrDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 cdsDF <- mutate(cdsDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 labelDF <- mutate(labelDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 
-palette <- setNames(c(brewer.pal(9, "Blues")[6], brewer.pal(9, "Reds")[3:5], brewer.pal(9, "Purples")[5], "#BDBDBD"), 
+palette <- setNames(c(brewer.pal(9, "Blues")[6], brewer.pal(9, "Reds")[3:4], "#BDBDBD"), 
     seq(length(keepTranscripts), 1))
 p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xmax = 1 - utrDF$V5, ymin = utrDF$Transcript_Number - 0.25,
     ymax = utrDF$Transcript_Number + 0.25, color = "black", linewidth = 0.5) + geom_rect(data = cdsDF %>% mutate(Transcript_Number = factor(Transcript_Number)), 
@@ -170,12 +170,12 @@ p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 1 - utrDF$V4, xm
 
 propDF <- gather(propMatrix, "Sample_ID", "Proportion", -Transcript_ID)
 sortTx <- c(as.character(setNames(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]), paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", 
-    gtfDF$Transcript_ID)])), sep = "."))[c("NovelTx.3", "NovelTx.2")]), "ENST00000396649.7")
+    gtfDF$Transcript_ID)])), sep = "."))[c("NovelTx.1")]), "ENST00000396649.7")
 sampleOrder <- propDF %>% filter(Transcript_ID %in% sortTx) %>% group_by(Sample_ID) %>% summarise(Proportion = sum(Proportion)) %>%
     ungroup %>% arrange(desc(Proportion)) %>% pull(Sample_ID)
 propDF$Sample_ID <- factor(propDF$Sample_ID, levels = sampleOrder)
 
-palette <- setNames(c(brewer.pal(9, "Blues")[6], brewer.pal(9, "Reds")[3:5], brewer.pal(9, "Purples")[5], "#BDBDBD"), 
+palette <- setNames(c(brewer.pal(9, "Blues")[6], brewer.pal(9, "Reds")[3:4], "#BDBDBD"), 
     c(recode(rev(keepTranscripts)[as.integer(names(newTxAssign))], 
     !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
     unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))
