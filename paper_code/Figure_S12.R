@@ -70,7 +70,7 @@ system(paste("grep \"", target.gene$V4, "\" ", gencode.gtf, " > ", file.path(dir
 
 # Run stringtie on haplotype-specific BAM file for Q1687
 dir.create(file.path(dirname(outfile), "tmp/Q1687"), showWarnings = FALSE)
-system(paste(stringtie, file.path(workdir, "PMD/Q1687/RNA/stripe/target_genes/NUBPL/hap2_reads.bam"), "-g",  file.path(dirname(outfile), "tmp/gene.gtf"), 
+system(paste(stringtie, file.path(workdir, "PMD/Q1687/RNA/stripe/target_genes/NUBPL/hap2_reads.bam"), "-G",  file.path(dirname(outfile), "tmp/gene.gtf"), 
     "-o", file.path(dirname(outfile), "tmp/Q1687/output.gtf"), "-L -s 5 -c 5 -u -M 0 -l Q1687"))
 
 # Run stringtie on TEQUILA-seq BAM files for other cohort samples
@@ -81,7 +81,7 @@ for (sample.id in cohort.samples) {
     system(paste(samtools, "view -hb -F 256 -q 1", file.path(workdir, "PMD", sample.id, "RNA", paste(sample.id, "TEQUILA.bam", sep = "_")), 
         paste(target.gene$V1, ":", target.gene$V2+1, "-", target.gene$V3, sep = ""), " > ", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
     system(paste(samtools, "index", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
-    system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-g",  file.path(dirname(outfile), "tmp/gene.gtf"), "-o", 
+    system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-G",  file.path(dirname(outfile), "tmp/gene.gtf"), "-o", 
         file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-L -s 5 -c 5 -u -M 0 -l", sample.id))
 }
 
