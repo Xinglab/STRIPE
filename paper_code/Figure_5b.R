@@ -73,6 +73,6 @@ p <- ggplot(outDF, aes(x = Coverage, y = Count, color = Group)) + geom_point(str
     theme(panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
     axis.title = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
     legend.position = "none", plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + ylab("Junction read count") + 
-    xlab("Total junction coverage") + scale_color_manual(values = c("#1A78AC", "#6FC7CE", "#E43321", "#E43321")) + ggtitle("NGLY1 exons 11 skipping")
+    xlab("Total junction coverage") + scale_color_manual(values = c("#1A78AC", "#6FC7CE", "#E43321", "#E43321")) + ggtitle("NGLY1 exon 11 skipping")
 
 ggsave(outfile, plot = p, width = 2.5, height = 2)
