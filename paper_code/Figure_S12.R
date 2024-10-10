@@ -144,7 +144,7 @@ cdsDF <- filter(gtfDF, V3 == "CDS")
 labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% mutate(Transcript_ID = recode(Transcript_ID, !!!setNames( 
     paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-newTxAssign <- setNames(seq(length(keepTranscripts),1), c(1,4,2,3))
+newTxAssign <- setNames(seq(length(keepTranscripts),1), c(1,4,3,2))
 intronDF <- mutate(intronDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 utrDF <- mutate(utrDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
 cdsDF <- mutate(cdsDF, Transcript_Number = recode(Transcript_Number, !!!newTxAssign))
@@ -167,7 +167,7 @@ p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = utrDF$V4, xmax =
 
 propDF <- gather(propMatrix, "Sample_ID", "Proportion", -Transcript_ID)
 sortTx <- c(as.character(setNames(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]), paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", 
-    gtfDF$Transcript_ID)])), sep = "."))[c("NovelTx.1", "NovelTx.3")]))
+    gtfDF$Transcript_ID)])), sep = "."))[c("NovelTx.1", "NovelTx.2")]))
 sampleOrder <- propDF %>% filter(Transcript_ID %in% sortTx) %>% group_by(Sample_ID) %>% summarise(Proportion = sum(Proportion)) %>%
     ungroup %>% arrange(desc(Proportion)) %>% pull(Sample_ID)
 propDF$Sample_ID <- factor(propDF$Sample_ID, levels = sampleOrder)
