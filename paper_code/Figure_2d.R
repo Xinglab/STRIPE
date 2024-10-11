@@ -4,8 +4,7 @@
 # Date: 2024.10.04
 # Figure 2d
 
-# (d) Read support and total coverage for a splice junction involving skipping of EARS2 exons 3 to 7 across 
-# cohort samples and tissue-matched GTEx controls.
+# Usage frequencies for a splice junction involving skipping of EARS2 exons 3 to 7 across cohort samples and tissue-matched GTEx controls.
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
@@ -32,7 +31,7 @@ gtex.splice <- full_join(read.table(file.path(workdir, "PMD/references/GTEx_v8/F
 junction.counts <- as.numeric(gtex.splice %>% filter(Chrom == "chr16" & Start == "23525380" & End == "23552148") %>% 
     select(-c(Chrom, Start, End)))
 junction.coverage <- as.numeric(gtex.splice %>% select(-c(Chrom, Start, End)) %>% colSums)
-outDF <- tibble(Count = junction.counts, Coverage = junction.coverage) %>% mutate(Group = "Fibroblasts (GTEx)")
+outDF <- tibble(Count = junction.counts, Coverage = junction.coverage) %>% mutate(Group = "Fibroblasts\n(GTEx v8)", Label = "")
 
 # Retrieve read support and total coverage for splice junction chr16:23525380-23552148 in cohort samples
 cohort.samples <- read.table(file.path(workdir, "PMD/samples.txt"), sep = "\t", header = TRUE) %>% filter(Provider == "Rebecca Ganetzky") %>% pull(ID)
@@ -54,19 +53,18 @@ for (sampid in cohort.samples) {
             End = 23552148), by = join_by(Chrom, Start, End)) %>% replace(is.na(.), 0)
         junction.counts <- c(junction.counts, inDF %>% filter(Chrom == "chr16" & Start == 23525380 & End == 23552148) %>% pull(Read_Counts))
         junction.coverage <- c(junction.coverage, sum(inDF$Read_Counts))
-        sample.labels <- c(sample.labels, "Fibroblasts (cohort)")
+        sample.labels <- c(sample.labels, "")
     }
 }
-outDF <- bind_rows(outDF, tibble(Count = junction.counts, Coverage = junction.coverage, Group = sample.labels)) %>% 
-    mutate(Group = factor(as.character(Group), levels = c("Fibroblasts (GTEx)", "Fibroblasts (cohort)", "BS2-1 (haplotype 1)")))
+outDF <- bind_rows(outDF, tibble(Count = junction.counts, Coverage = junction.coverage, Group = "Fibroblasts\n(cohort)", Label = sample.labels)) %>% 
+    mutate(Group = factor(as.character(Group), levels = c("Fibroblasts\n(GTEx v8)", "Fibroblasts\n(cohort)"))) %>% filter(Coverage >= 20) %>%
+    mutate(Usage = Count/Coverage)
 
-# Plot read support versus total coverage for splice junction chr16:23525380-23552148 in cohort samples and GTEx controls
-p <- ggplot(outDF, aes(x = Coverage, y = Count, color = Group)) + geom_point(stroke = NA, alpha = 0.8) + theme_bw() + 
-    scale_x_continuous(trans = "pseudo_log", breaks = c(0, 10, 100, 1000), limits = c(0, 2000)) + 
-    scale_y_continuous(trans = "pseudo_log", breaks = c(0, 10, 100, 1000), limits = c(0, 2000)) + 
-    theme(panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
-    axis.title = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
-    legend.position = "none", plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + ylab("Junction read count") + 
-    xlab("Total junction coverage") + scale_color_manual(values = c("#1A78AC", "#6FC7CE", "#E43321")) + ggtitle("EARS2 exons 3-7 skipping")
+p <- ggplot() + geom_jitter(data = outDF %>% filter(Label == ""), aes(x = Group, y = Usage * 100, color = Group), stroke = NA, alpha = 0.5, height = 0, 
+    width = 0.2) + geom_point(data = outDF %>% filter(Label != ""), aes(x = Group, y = Usage * 100), stroke = NA, color = "#E43321") + theme_bw() + 
+    ylim(0, 100) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+    axis.text = element_text(color = "black", size = 6), axis.title.y = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
+    legend.position = "none", plot.title = element_text(color = "black", size = 7, hjust = 0.5), axis.title.x = element_blank()) + 
+    ylab("Splice junction usage (%)") + scale_color_manual(values = c("#1A78AC", "#6FC7CE")) + ggtitle("EARS2 exons 3-7 skipping")
 
-ggsave(outfile, plot = p, width = 2.5, height = 2)
+ggsave(outfile, plot = p, width = 2, height = 2)
