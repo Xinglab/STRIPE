@@ -55,18 +55,18 @@ targeted.map <- read.table(file.path(workdir, "PMD/E1877/RNA/stripe/quality_cont
 targeted.data <- read.table(file.path(workdir, "PMD/E1877/RNA/stripe/quality_control/stringtie/E1877_TEQUILA.gene_abundance.tsv"),
     sep = "\t", header = TRUE) %>% filter(!(Gene.ID %in% untargeted.map$Gene_ID)) %>% separate(Gene.ID, c("Gene_ID", NA), sep = "\\.") %>% 
     mutate(Group = case_when(Gene_ID %in% cdg.genes ~ "PMD-359", TRUE ~ "Other")) %>% select(Gene_ID, Group, TPM) %>% 
-    mutate(Rank = rank(-TPM, ties.method = "first"), Library = "TEQUILA")
+    mutate(Rank = rank(-TPM, ties.method = "first"), Library = "TEQUILA-seq")
 
 # Compute on-target rates for untargeted long-read RNA-seq and TEQUILA-seq
-outDF <- bind_rows(untargeted.data, targeted.data) %>% mutate(Library = factor(Library, levels = c("Untargeted", "TEQUILA")), 
+outDF <- bind_rows(untargeted.data, targeted.data) %>% mutate(Library = factor(Library, levels = c("Untargeted", "TEQUILA-seq")), 
     Group = factor(Group, levels = c("PMD-359", "Other")))
 on.target.rates <- outDF %>% filter(Group == "PMD-359") %>% group_by(Library) %>% reframe(Rate = sum(TPM)/1e4) %>% 
     mutate(Label = paste("On-target: ", formatC(round(Rate, digits = 1), format = "f", flag = "0", digits = 1), "%", sep = ""))
 
 # Compute the enrichment fold attained by TEQUILA-seq
-enrichment.fold <- on.target.rates %>% select(!(Label)) %>% spread(Library, Rate) %>% mutate(Enrichment = TEQUILA/Untargeted) %>% 
+enrichment.fold <- on.target.rates %>% select(!(Label)) %>% spread(Library, Rate) %>% mutate(Enrichment = `TEQUILA-seq`/Untargeted) %>% 
     mutate(Label = paste("Enrichment: ", formatC(round(Enrichment, digits = 1), format = "f", flag = "0", digits = 1), "x", sep = "")) %>% 
-    mutate(Library = factor("TEQUILA", levels = c("Untargeted", "TEQUILA")))
+    mutate(Library = factor("TEQUILA-seq", levels = c("Untargeted", "TEQUILA-seq")))
 
 # Plot gene rank versus gene abundance for the 2000 most abundant genes in untargeted long-read RNA-seq and TEQUILA-seq
 palette <- setNames(c("#CA0020", "gray80"), c("PMD-359", "Other"))
