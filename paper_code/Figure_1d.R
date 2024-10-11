@@ -66,7 +66,7 @@ p <- ggplot(outDF, aes(x = log2(Untargeted + 1), y = log2(TEQUILA + 1))) + theme
     linetype = "dashed", linewidth = 0.25) + geom_point(stroke = NA, size = 1, alpha = 0.5, color = "#0571B0") + theme(panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
     axis.title = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
-    plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + xlab("Untargeted, log2(TPM+1)") + ylab("TEQUILA, log2(TPM+1)") + 
+    plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + xlab("Untargeted, log2(TPM+1)") + ylab("TEQUILA-seq, log2(TPM+1)") + 
     ggtitle("Gene abundance (CDG-466)") + geom_text(data = corrDF, mapping = aes(x = 5.25, y = 3.5, label = Label), size = 5/14*6, hjust = 0)
 
 # Save p to outfile
