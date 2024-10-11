@@ -30,18 +30,17 @@ inDF <- read.table(file.path(workdir, "manuscript/Supplementary_Tables/Table_S6/
     header = TRUE) %>% mutate(minor_class = ifelse(hap1_read_count > hap2_read_count, hap2_variant_class,
     hap1_variant_class), minor_ratio = ifelse(hap1_read_count > hap2_read_count, hap2_read_count/(hap1_read_count +
     hap2_read_count), hap1_read_count/(hap1_read_count + hap2_read_count)))
-medianDF <- aggregate(inDF$minor_ratio, list(inDF$minor_class), FUN = median) %>% setNames(c("minor_class", "median_ratio"))
-classLevels <- arrange(medianDF, -median_ratio) %>% pull(minor_class)
-inDF$minor_class <- factor(as.character(inDF$minor_class), levels = classLevels)
 
 # Plot minor haplotype expression ratios for different classes of pathogenic variants
 palette <- setNames(c("#F7A63D", "#63BA96", "#4C78B9", "#88CCEE", "#CE90BE", "#954492", "#E83578", "#223671"), 
     c("Missense", "Synonymous", "Splice donor", "Splice acceptor", "Inframe deletion", "Frameshift duplication", 
     "Nonsense", "Structural deletion"))
 
-p <- ggplot() + geom_jitter(data = inDF, aes(x = minor_ratio * 100, y = minor_class, color = minor_class), stroke = NA, alpha = 0.8, width = 0, height = 0.15)  + 
-    theme_bw() + xlab("Minor haplotype expression ratio (%)") + theme(panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
-    axis.title.x = element_text(color = "black", size = 7), axis.title.y = element_blank(), axis.ticks = element_line(color = "black", linewidth = 0.25), 
-    legend.position = "none") + coord_cartesian(xlim = c(0, 50)) + scale_color_manual(values = palette)
+p <- ggplot(inDF %>% arrange(minor_ratio) %>% mutate(sample_rank = as.integer(rownames(.)))) + geom_segment(aes(x = sample_rank, xend = sample_rank, y = 0, 
+    yend = minor_ratio * 100), color = "black", linewidth = 0.25) + geom_point(aes(x = sample_rank, y = minor_ratio * 100, color = minor_class), stroke = NA, size = 2) +
+    theme_classic() + xlab("Known disease-causing alleles on minor haplotypes") + ylab("Minor haplotype expression ratio (%)") + theme(panel.background = element_blank(), 
+    panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.text.y = element_text(color = "black", size = 6), axis.ticks.y = element_line(color = "black", 
+    linewidth = 0.25), axis.title = element_text(color = "black", size = 7), axis.ticks.x = element_blank(), axis.text.x = element_blank(), legend.text = element_text(color = "black",
+    size = 6), legend.title = element_blank()) + coord_cartesian(ylim = c(0, 50)) + scale_color_manual(values = palette)
 
-ggsave(outfile, plot = p, width = 3.5, height = 2)
+ggsave(outfile, plot = p, width = 4.5, height = 2.25)
