@@ -83,7 +83,7 @@ p1 <- ggplot(outDF, aes(x = log2(Untargeted + 1), y = log2(TEQUILA + 1))) + them
     linetype = "dashed", linewidth = 0.25) + geom_point(stroke = NA, size = 1, alpha = 0.5, color = "#0571B0") + theme(panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
     axis.title = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
-    plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + xlab("Untargeted, log2(TPM+1)") + ylab("TEQUILA, log2(TPM+1)") + 
+    plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + xlab("Untargeted, log2(TPM+1)") + ylab("TEQUILA-seq, log2(TPM+1)") + 
     ggtitle("Gene abundance (CDG-466)") + geom_text(data = corrDF, mapping = aes(x = 5.25, y = 3.5, label = Label), size = 5/14*6, hjust = 0)
 
 # =====================================================================================================================
@@ -110,7 +110,7 @@ p2 <- ggplot(outDF, aes(x = Untargeted * 100, y = TEQUILA * 100)) + theme_classi
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
     axis.text = element_text(color = "black", size = 6), axis.title = element_text(color = "black", size = 7), 
     axis.ticks = element_line(color = "black", linewidth = 0.25), plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + 
-    xlab("Untargeted (%)") + ylab("TEQUILA (%)") + ggtitle("Splice junction usage (CDG-466)") + coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
+    xlab("Untargeted (%)") + ylab("TEQUILA-seq (%)") + ggtitle("Splice junction usage (CDG-466)") + coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
     geom_text(data = corrDF, mapping = aes(x = 35, y = 10, label = Label), size = 5/14*6, hjust = 0)
 
 # =====================================================================================================================
@@ -149,7 +149,7 @@ p3 <- ggplot(outDF, aes(x = log2(Untargeted + 1), y = log2(TEQUILA + 1))) + them
     linetype = "dashed", linewidth = 0.25) + geom_point(stroke = NA, size = 1, alpha = 0.5, color = "#CA0020") + theme(panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank(), panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
     axis.title = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
-    plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + xlab("Untargeted, log2(TPM+1)") + ylab("TEQUILA, log2(TPM+1)") + 
+    plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + xlab("Untargeted, log2(TPM+1)") + ylab("TEQUILA-seq, log2(TPM+1)") + 
     ggtitle("Gene abundance (PMD-359)") + geom_text(data = corrDF, mapping = aes(x = 5.25, y = 3.5, label = Label), size = 5/14*6, hjust = 0)
 
 # =====================================================================================================================
@@ -176,7 +176,7 @@ p4 <- ggplot(outDF, aes(x = Untargeted * 100, y = TEQUILA * 100)) + theme_classi
     theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
     axis.text = element_text(color = "black", size = 6), axis.title = element_text(color = "black", size = 7), 
     axis.ticks = element_line(color = "black", linewidth = 0.25), plot.title = element_text(color = "black", size = 7, hjust = 0.5)) + 
-    xlab("Untargeted (%)") + ylab("TEQUILA (%)") + ggtitle("Splice junction usage (PMD-359)") + coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
+    xlab("Untargeted (%)") + ylab("TEQUILA-seq (%)") + ggtitle("Splice junction usage (PMD-359)") + coord_cartesian(xlim = c(0, 100), ylim = c(0, 100)) +
     geom_text(data = corrDF, mapping = aes(x = 35, y = 10, label = Label), size = 5/14*6, hjust = 0)
 
 # Assemble plots into the same grid and save to outfile
