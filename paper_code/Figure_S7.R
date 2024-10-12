@@ -161,4 +161,4 @@ p2 <- ggplot() + geom_jitter(data = outDF %>% filter(Label == ""), aes(x = Group
 
 # Assemble p1 and p2 onto the same plotting grid
 p <- plot_grid(p1, p2, nrow = 1, rel_widths = c(2.25, 1), labels = c("a", "b"), label_size = 8)
-ggsave(outfile, plot = p, width = 6.5, height = 2.5)
+ggsave(outfile, plot = p, width = 6.5, height = 1.75)
