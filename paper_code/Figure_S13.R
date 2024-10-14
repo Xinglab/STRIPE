@@ -107,7 +107,7 @@ gene.coverage <- ggplot(bind_rows(tibble(Coord = c(head(hap1DF$Start, 1), rep(ta
     axis.ticks.y = element_line(color = "black", linewidth = 0.5), axis.text.y = element_text(color = "black", size = 6),
     axis.line.y = element_line(color = "black", linewidth = 0.5), legend.title = element_blank(), legend.position = c(0.5, 1),
     legend.text = element_text(color = "black", size = 6), legend.background = element_blank()) + 
-    ylab("Read coverage\n(TEQUILA-seq)") + scale_color_manual(values = c("#59AAD1", "#DF5C79")) + ylim(0, 1200) + guides(color = guide_legend(nrow = 1))
+    ylab("Read coverage\n(TEQUILA-seq)") + scale_color_manual(values = c("#59AAD1", "#DF5C79")) + ylim(0, 6000) + guides(color = guide_legend(nrow = 1))
 gene.structure <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = 0.75, xmax = 1.25, ymin = 1 - utrDF$V4, ymax = 1 - utrDF$V5, 
     color = "black", linewidth = 0.5) + geom_rect(data = cdsDF, fill = "#BFBFBF", xmin = 0.75, xmax = 1.25, ymin = 1 - cdsDF$V4,
     ymax = 1 - cdsDF$V5, color = "black", linewidth = 0.5) + geom_segment(data = intronDF, x = 1, xend = 1, y = 1 - intronDF$V4, yend = 1 - intronDF$V5,
