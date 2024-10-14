@@ -160,7 +160,7 @@ p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = utrDF$V4, xmax =
     panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = "none") + scale_fill_manual(values = rev(palette))
 
 # =====================================================================================================================
-#                                                      PANEL F
+#                                                      PANEL C
 # =====================================================================================================================
 
 propDF <- gather(propMatrix, "Sample_ID", "Proportion", -Transcript_ID) %>% mutate(Transcript_ID = factor(Transcript_ID, levels = c(keepTranscripts, "Other")))
@@ -186,5 +186,5 @@ p2 <- ggplot() + geom_bar(data = summaryDF, aes(x = Group, y = Prop_Mean * 100, 
 system(paste("rm -rf", file.path(dirname(outfile), "tmp")))
 
 # Assemble p1 and p2 onto the same plotting grid
-p <- plot_grid(p1, p2, nrow = 1, rel_widths = c(1.75, 1), labels = c("d", "e"), label_size = 8)
+p <- plot_grid(p1, p2, nrow = 1, rel_widths = c(1.75, 1), labels = c("b", "c"), label_size = 8)
 ggsave(outfile, plot = p, width = 5.25, height = 2)
