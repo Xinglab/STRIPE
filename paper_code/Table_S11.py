@@ -84,8 +84,8 @@ for patient in cohort:
 
 filterDF = filterDF[cohort_filter]
 
-# Filter for results in undiagnosed patients
-filterDF = filterDF[filterDF['patient_id'].isin(set(undiagnosed))]
+# Filter for results in undiagnosed patients with a minor ratio < 0.4 (implies a departure of 10% from allelic balance)
+filterDF = filterDF[(filterDF['patient_id'].isin(set(undiagnosed))) & (filterDF['minor_ratio'] < 0.4)]
 
 # Save filterDF to outfile
 filterDF = filterDF.drop(['minor_ratio'], axis = 1)
