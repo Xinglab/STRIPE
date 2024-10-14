@@ -149,7 +149,7 @@ labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% m
     paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
     unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-palette <- setNames(c(brewer.pal(9, "Blues")[6:5], brewer.pal(9, "Reds")[3:5]), seq(length(keepTranscripts), 1))
+palette <- setNames(c(brewer.pal(9, "Blues")[6:5], brewer.pal(9, "YlOrBr")[4], brewer.pal(9, "Reds")[3:4]), seq(length(keepTranscripts), 1))
 p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = utrDF$V4, xmax = utrDF$V5, ymin = utrDF$Transcript_Number - 0.25,
     ymax = utrDF$Transcript_Number + 0.25, color = "black", linewidth = 0.5) + geom_rect(data = cdsDF %>% mutate(Transcript_Number = factor(Transcript_Number)), 
     aes(fill = Transcript_Number), xmin = cdsDF$V4, xmax = cdsDF$V5, ymin = cdsDF$Transcript_Number - 0.25, ymax = cdsDF$Transcript_Number + 0.25, 
