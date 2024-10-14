@@ -55,9 +55,9 @@ for patient in cohort:
                 outDF = pd.concat([outDF, pd.DataFrame([[patient, 'CDG-466', target, 'All'] + list(item) for item in 
                     pd.read_csv(infile, sep = '\t', header = 0).values], columns = outDF.columns)])
 
-# Keep junctions with FDR-adjusted p-value < 1%
+# Keep junctions with FDR-adjusted p-value < 5%
 _, fdr_values, _, _ = multipletests(outDF['p_value'], method = 'fdr_bh')
-filterDF = outDF[fdr_values < 0.01].copy()
+filterDF = outDF[fdr_values < 0.05].copy()
 
 # Compute usage frequencies for junctions in filterDF among cohort samples
 sjDF = filterDF[['splice_junction']].drop_duplicates().reset_index(drop = True)
@@ -77,21 +77,21 @@ for patient in cohort:
 
 # Iterate over individuals in cohort and filter for junctions meeting the following criteria:
 #   * Usage frequency for splice junction is the highest in a given individual
-#   * Usage frequency for splice junction is more than twice that of the next highest individual
+#   * Usage frequency for splice junction is more than 1.5 times that of the next highest individual
 
 cohort_filter = []
 for patient in cohort:
     currDF = filterDF[filterDF['patient_id'] == patient]
     currPSI = dict(zip(sjDF['splice_junction'], sjDF.drop(['splice_junction', 'Chrom', 'Start', 'End', patient], axis = 1).max(axis = 1)))
     currFilter = ((filterDF[filterDF['patient_id'] == patient]['junction_usage'] > filterDF[filterDF['patient_id'] == patient]['splice_junction'].map(currPSI)) &
-        (filterDF[filterDF['patient_id'] == patient]['junction_usage'] > 2*filterDF[filterDF['patient_id'] == patient]['splice_junction'].map(currPSI)))
+        (filterDF[filterDF['patient_id'] == patient]['junction_usage'] > 1.5*filterDF[filterDF['patient_id'] == patient]['splice_junction'].map(currPSI)))
     cohort_filter += list(currFilter)
 
 filterDF = filterDF[cohort_filter]
 
-# Keep junctions called as outliers in no more than 1 individual and have a usage frequency shift > 20% relative to GTEx controls
+# Keep junctions called as outliers in no more than 1 individual and have a usage frequency shift > 10% relative to GTEx controls
 junction_counts = filterDF[['patient_id', 'splice_junction']].drop_duplicates()['splice_junction'].value_counts()
-filterDF = filterDF[(filterDF['splice_junction'].isin(set(junction_counts[junction_counts == 1].index))) & (filterDF['usage_shift'] > 0.2)]
+filterDF = filterDF[(filterDF['splice_junction'].isin(set(junction_counts[junction_counts == 1].index))) & (filterDF['usage_shift'] > 0.1)]
 
 # Filter for outlier junctions in undiagnosed patients
 filterDF = filterDF[filterDF['patient_id'].isin(set(undiagnosed))]
