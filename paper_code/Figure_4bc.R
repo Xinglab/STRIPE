@@ -52,7 +52,6 @@ GetIntrons <- function(x, transcripts) {
 workdir <- "/mnt/isilon/lin_lab_share/STRIPE"
 stringtie <- "/scr1/users/wangr5/tools/stringtie-2.2.3/stringtie"
 samtools <- "/scr1/users/wangr5/tools/samtools-1.21/samtools"
-gffcompare <- "/scr1/users/wangr5/tools/gffcompare-0.12.6/gffcompare"
 target.gene <- read.table(file.path(workdir, "CDG/references/target_genes.bed"), sep = "\t", header = FALSE) %>% filter(V5 == "PIGQ")
 gencode.gtf <- "/scr1/users/wangr5/references/gencode.v45.annotation.gtf"
 outfile <- file.path(workdir, "manuscript/Main_Figures/Figure_4/Figure_4bc.pdf")
@@ -68,6 +67,7 @@ dir.create(file.path(dirname(outfile), "tmp"), showWarnings = FALSE)
 system(paste("grep \"", target.gene$V4, "\" ", gencode.gtf, " > ", file.path(dirname(outfile), "tmp/gene.gtf"), sep = ""))
 
 # Extract canonical transcript annotations for target.gene from gene.gtf
+# For some unknown reason, stringtie fails to discover the exon 4 skipping isoform in CDG-132-1 when provided all transcript annotations
 system(paste("grep \"Ensembl_canonical\"", file.path(dirname(outfile), "tmp/gene.gtf"), ">",
     file.path(dirname(outfile), "tmp/canonical.gtf")))
 
@@ -75,7 +75,7 @@ system(paste("grep \"Ensembl_canonical\"", file.path(dirname(outfile), "tmp/gene
 dir.create(file.path(dirname(outfile), "tmp/CDG-132-1"), showWarnings = FALSE)
 system(paste(stringtie, file.path(workdir, "CDG/CDG-132-1/RNA/stripe/target_genes/PIGQ/hap1_reads.bam"), "-G", 
     file.path(dirname(outfile), "tmp/canonical.gtf"), "-o", file.path(dirname(outfile), "tmp/CDG-132-1/output.gtf"), 
-    "-L -s 5 -c 5 -u -M 0 -l CDG-132-1"))
+    "-L -s 5 -c 5 -u -M 0"))
 
 # Run stringtie on TEQUILA-seq BAM files for other cohort samples
 cohort.samples <- read.table(file.path(workdir, "CDG/samples.txt"), sep = "\t", header = TRUE) %>% filter(Provider != "Lan Lin" &
@@ -86,53 +86,44 @@ for (sample.id in cohort.samples) {
         paste(target.gene$V1, ":", target.gene$V2+1, "-", target.gene$V3, sep = ""), " > ", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
     system(paste(samtools, "index", file.path(dirname(outfile), "tmp", sample.id, "input.bam")))
     system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-G", file.path(dirname(outfile), "tmp/canonical.gtf"), 
-        "-o", file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-L -s 5 -c 5 -u -M 0 -l", sample.id))
+        "-o", file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-L -s 5 -c 5 -u -M 0"))
 }
 
-# Compare each sample-specific GTF file to existing GENCODE annotations
-tpmDF <- tibble(Transcript_ID = character())
+# Merge sample-specific GTF files with existing GENCODE annotations (use -f 0 during merging to include the exon 4 skipping isoform)
+data.table::fwrite(list(file.path(dirname(outfile), "tmp", c("CDG-132-1", cohort.samples), "output.gtf")), file = file.path(dirname(outfile), "tmp/mergelist.txt"))
+system(paste(stringtie, "--merge", "-G", file.path(dirname(outfile), "tmp/gene.gtf"), "-o", file.path(dirname(outfile), "tmp/merged.gtf"), "-f 0",
+    file.path(dirname(outfile), "tmp/mergelist.txt")))
 
-system(paste("cp", file.path(dirname(outfile), "tmp/gene.gtf"), file.path(dirname(outfile), "tmp/reference.gtf")))
-current.ref <- file.path(dirname(outfile), "tmp/reference.gtf")
+# Re-run stringtie on TEQUILA-seq BAM files
+system(paste(stringtie, file.path(workdir, "CDG/CDG-132-1/RNA/stripe/target_genes/PIGQ/hap1_reads.bam"), "-G", 
+    file.path(dirname(outfile), "tmp/merged.gtf"), "-o", file.path(dirname(outfile), "tmp/CDG-132-1/output.gtf"), 
+    "-s 5 -c 5 -u -M 0 -e -B"))
+for (sample.id in cohort.samples) {
+    system(paste(stringtie, file.path(dirname(outfile), "tmp", sample.id, "input.bam"), "-G", file.path(dirname(outfile), "tmp/merged.gtf"), "-o", 
+        file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), "-s 5 -c 5 -u -M 0 -e -B"))
+}
+
+system(paste("python /scr1/users/wangr5/tools/Annotate_ORF.py -i", file.path(dirname(outfile), "tmp/merged.gtf"), "-a", 
+    file.path(dirname(outfile), "tmp/gene.gtf"), "-f /scr1/users/wangr5/references/GRCh38.primary_assembly.genome.fa", 
+    "-o", file.path(dirname(outfile), "tmp/merged.updated.gtf")))
+
+# Construct FPKM matrix across samples
+outDF <- tibble(Transcript_ID = character())
 for (sample.id in c("CDG-132-1", cohort.samples)) {
-    system(paste(gffcompare, "-r", current.ref, "-o", file.path(dirname(outfile), "tmp", sample.id, "gffcmp"), 
-        file.path(dirname(outfile), "tmp", sample.id, "output.gtf")), ignore.stdout = TRUE, ignore.stderr = TRUE)
-    sampleDF <- read.table(file.path(dirname(outfile), "tmp", sample.id, "output.gtf"), sep = "\t", header = FALSE, comment = "#") %>%
-        filter(V3 == "transcript") %>% mutate(Transcript_ID = unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "transcript_id")))),
-        TPM = as.numeric(unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "TPM")))))) %>% select(Transcript_ID, TPM) %>% tibble
-    if (sample.id == "CDG-132-1") {
-        mappingDF <- read.table(file.path(dirname(outfile), "tmp", sample.id, "gffcmp.tracking"), sep = "\t", header = FALSE) %>%
-            separate(V3, c(NA, "Ref_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") %>%
-            filter(!(V4 %in% c("s", "x", "p", "e", "r", "u", "c"))) %>% mutate(New_ID = ifelse(V4 == "=", Ref_Transcript_ID, Transcript_ID))
-    } else {
-        mappingDF <- read.table(file.path(dirname(outfile), "tmp", sample.id, "gffcmp.tracking"), sep = "\t", header = FALSE) %>%
-            separate(V3, c(NA, "Ref_Transcript_ID"), sep = "\\|") %>% separate(V5, c(NA, "Transcript_ID", NA, NA, NA, NA, NA), sep = "\\|") %>%
-            filter(!(V4 %in% c("s", "x", "p", "e", "r", "u"))) %>% mutate(New_ID = ifelse(V4 %in% c("=", "c"), Ref_Transcript_ID, Transcript_ID))
-    }
-    sampleDF <- mutate(sampleDF, New_ID = recode(Transcript_ID, !!!setNames(mappingDF$New_ID, mappingDF$Transcript_ID), .default = "Other")) %>%
-        select(New_ID, TPM) %>% group_by(New_ID) %>% summarise(TPM = sum(TPM)) %>% ungroup %>% setNames(c("Transcript_ID", sample.id))
-    tpmDF <- full_join(tpmDF, sampleDF, by = join_by(Transcript_ID)) %>% replace(is.na(.), 0)
-    novel_transcripts <- mappingDF %>% filter(!(V4 %in% c("s", "x", "p", "e", "r", "u", "=", "c"))) %>% pull(New_ID)
-    if(length(novel_transcripts) > 0){
-        system(paste("grep -E", paste("\"", paste(paste("\"", novel_transcripts, "\"", sep = ""), collapse = "|"), "\"", sep = ""), file.path(dirname(outfile), "tmp", sample.id, 
-            "gffcmp.annotated.gtf"), ">>", current.ref))
-    }
+    outDF <- full_join(outDF, read.table(file.path(dirname(outfile), "tmp", sample.id, "t_data.ctab"), sep = "\t", header = TRUE) %>%
+        select(t_name, FPKM) %>% setNames(c("Transcript_ID", sample.id)), by = join_by(Transcript_ID))
 }
-
-system(paste("tail -n +2", current.ref, ">", paste(current.ref, "tmp", sep = ".")))
-system(paste("python /scr1/users/wangr5/tools/Annotate_ORF.py -i", paste(current.ref, "tmp", sep = "."), "-a", file.path(dirname(outfile), "tmp/gene.gtf"), 
-    "-f /scr1/users/wangr5/references/GRCh38.primary_assembly.genome.fa", "-o", file.path(dirname(outfile), "tmp/reference.updated.gtf")))
 
 # Convert TPM matrix into a proportion matrix
-propMatrix <- bind_cols(tpmDF[,1], sweep(tpmDF[,-1], 2, colSums(tpmDF[,-1]), `/`))
+propMatrix <- bind_cols(outDF[,1], sweep(outDF[,-1], 2, colSums(outDF[,-1]), `/`))
 sampleTx <- propMatrix[,1:2] %>% arrange(desc(`CDG-132-1`))
 cohortTx <- propMatrix[,-2] %>% mutate(Total = rowSums(across(where(is.numeric)))) %>% select(Transcript_ID, Total) %>% arrange(desc(Total))
-keepTranscripts <- c("ENST00000321878.10", "ENST00000026218.9", "ENST00000470411.2", "CDG-132-1.1.5", "CDG-132-1.1.6")
+keepTranscripts <- c("ENST00000321878.10", "MSTRG.1.7", "MSTRG.1.12", "MSTRG.1.14", "ENST00000470411.2", "MSTRG.1.6", "MSTRG.1.11")
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
 
 # Rescale features in gtfDF
-gtfDF <- read.table(file.path(dirname(outfile), "tmp/reference.updated.gtf"), sep = "\t", header = FALSE, comment = "#") %>%
+gtfDF <- read.table(file.path(dirname(outfile), "tmp/merged.updated.gtf"), sep = "\t", header = FALSE, comment = "#") %>%
     mutate(Transcript_ID = unlist(lapply(V9, function(x) gsub(";", "", PullFeature(x, "transcript_id"))))) %>%
     filter(Transcript_ID %in% keepTranscripts) %>% select(Transcript_ID, V3, V4, V5) %>%
     arrange(Transcript_ID, V4, V5)
@@ -149,7 +140,7 @@ labelDF <- gtfDF %>% select(Transcript_ID, Transcript_Number) %>% distinct %>% m
     paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
     unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))))
 
-palette <- setNames(c(brewer.pal(9, "Blues")[6:5], brewer.pal(9, "YlOrBr")[4], brewer.pal(9, "Reds")[3:4]), seq(length(keepTranscripts), 1))
+palette <- setNames(c(brewer.pal(9, "Blues")[6:5], brewer.pal(9, "YlOrBr")[5:3], brewer.pal(9, "Reds")[3:4]), seq(length(keepTranscripts), 1))
 p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = utrDF$V4, xmax = utrDF$V5, ymin = utrDF$Transcript_Number - 0.25,
     ymax = utrDF$Transcript_Number + 0.25, color = "black", linewidth = 0.5) + geom_rect(data = cdsDF %>% mutate(Transcript_Number = factor(Transcript_Number)), 
     aes(fill = Transcript_Number), xmin = cdsDF$V4, xmax = cdsDF$V5, ymin = cdsDF$Transcript_Number - 0.25, ymax = cdsDF$Transcript_Number + 0.25, 
@@ -164,7 +155,7 @@ p1 <- ggplot() + geom_rect(data = utrDF, fill = "white", xmin = utrDF$V4, xmax =
 # =====================================================================================================================
 
 propDF <- gather(propMatrix, "Sample_ID", "Proportion", -Transcript_ID) %>% mutate(Transcript_ID = factor(Transcript_ID, levels = c(keepTranscripts, "Other")))
-palette <- setNames(c(brewer.pal(9, "Blues")[6:5], brewer.pal(9, "YlOrBr")[4], brewer.pal(9, "Reds")[3:4], "#BDBDBD"), 
+palette <- setNames(c(brewer.pal(9, "Blues")[6:5], brewer.pal(9, "YlOrBr")[5:3], brewer.pal(9, "Reds")[3:4], "#BDBDBD"), 
     c(recode(keepTranscripts, !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)])), sep = "."), 
     unique(gtfDF$Transcript_ID[!grepl("ENST", gtfDF$Transcript_ID)]))), "Other"))
 propDF <- propDF %>% mutate(Transcript_ID = factor(recode(Transcript_ID, !!!setNames(paste("NovelTx", 1:length(unique(gtfDF$Transcript_ID[!grepl("ENST", 
