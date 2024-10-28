@@ -52,7 +52,6 @@ GetIntrons <- function(x, transcripts) {
 workdir <- "/mnt/isilon/lin_lab_share/STRIPE"
 stringtie <- "/scr1/users/wangr5/tools/stringtie-2.2.3/stringtie"
 samtools <- "/scr1/users/wangr5/tools/samtools-1.21/samtools"
-gffcompare <- "/scr1/users/wangr5/tools/gffcompare-0.12.6/gffcompare"
 target.gene <- read.table(file.path(workdir, "PMD/references/target_genes.bed"), sep = "\t", header = FALSE) %>% filter(V5 == "EARS2")
 gencode.gtf <- "/scr1/users/wangr5/references/gencode.v45.annotation.gtf"
 outfile <- file.path(workdir, "manuscript/Main_Figures/Figure_2/Figure_2ef.pdf")
