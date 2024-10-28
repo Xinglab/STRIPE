@@ -171,7 +171,7 @@ p2 <- ggplot() + geom_bar(data = summaryDF, aes(x = Group, y = Prop_Mean * 100, 
     axis.text = element_text(color = "black", size = 6), axis.title.y = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", 
     linewidth = 0.25), plot.title = element_text(color = "black", size = 7, hjust = 0.5, face = "italic"), axis.title.x = element_blank(),
     legend.position = "bottom", legend.key.size = unit(0.3, "cm"), legend.title = element_blank(), legend.text = element_text(color = "black", size = 6)) + 
-    ggtitle("PIGQ") + scale_color_manual(values = palette) + guides(color = guide_legend(ncol = 2))
+    ggtitle("PIGQ") + scale_color_manual(values = palette) + guides(color = guide_legend(ncol = 2)) + ylim(0, 100)
 
 # Remove intermediate files
 system(paste("rm -rf", file.path(dirname(outfile), "tmp")))
