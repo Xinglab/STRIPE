@@ -29,17 +29,14 @@ outfile <- file.path(workdir, "manuscript/Revisions/20241219/Supplementary_Figur
 inDF <- read.table(infile, sep = "\t", header = FALSE)
 colnames(inDF) <- c("Value", "Group")
 inDF$Group <- factor(inDF$Group, levels = c("ref", "NGLY1", "case"))
-levels(inDF$Group) <- c("Control", "NGLY1\ndeficiency", "Patient\nFCDGC-02003")
-summaryDF <- inDF %>% group_by(Group) %>% summarise(Value = mean(Value, na.rm = T))
+levels(inDF$Group) <- c("Control", "NGLY1 deficiency", "FCDGC-02003")
 
 # Plot relative abundances (990 m/z) of Neu5Ac1Hex1GlcNAc1-Asn in patient FCDGC-02003, confirmed cases of NGLY1 deficiency, and age-matched controls
-p <- ggplot() + geom_bar(data = summaryDF, aes(x = Group, y = Value, fill = Group), linewidth = 0.5, stat = "identity", width = 0.75) + 
-    geom_point(data = inDF, aes(x = Group, y = Value, color = Group), stroke = NA, size = 0.75, alpha = 0.5, 
-    position = position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) + theme_classic() + 
-    ylab("Relative abundance\nNeu5Ac1Hex1GlcNAc1-Asn") + theme(panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), panel.background = element_blank(), axis.text = element_text(color = "black", size = 6), 
-    axis.title.y = element_text(color = "black", size = 7), axis.ticks = element_line(color = "black", linewidth = 0.25), 
-    axis.line = element_line(color = "black", linewidth = 0.25), axis.title.x = element_blank(), legend.position = "none") + ylim(0, 15) +
-    scale_fill_manual(values = c("#B0D405", "#97DDE9", "#F8A500")) + scale_color_manual(values = c("black", "black", "black"))
+p <- ggplot() + geom_jitter(data = inDF, aes(x = factor(1), y = Value, fill = Group, color = Group), shape = 21, width = 0.2, height = 0, size = 1) + theme_classic() +
+    ylab("Relative abundance\nNeu5Ac1Hex1GlcNAc1-Asn") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), 
+    axis.text.y = element_text(color = "black", size = 6), axis.title.y = element_text(color = "black", size = 7), axis.ticks.y = element_line(color = "black", linewidth = 0.25), 
+    axis.line = element_line(color = "black", linewidth = 0.25), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.x = element_blank(), 
+    legend.title = element_blank(), legend.text = element_text(color = "black", size = 6)) + scale_fill_manual(values = c("#BEBEBE", "#FDD976", "#F967A2")) +
+    scale_color_manual(values = c(NA, NA, "#000000")) + ylim(0, 15)
 
-ggsave(outfile, plot = p, width = 2.5, height = 2)
+ggsave(outfile, plot = p, width = 2.25, height = 1.5)
