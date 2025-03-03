@@ -54,9 +54,7 @@ p1 <- ggplot(inDF, aes(x = Junction_Distance, y = Shift * 100, color = Variant_C
 #       
 #   p-value = 6.4e-05
 
-inDF2 <- inDF %>% drop_na %>% mutate(Group = ifelse(SpliceAI > 0.1, "SpliceAI > 0.1", "SpliceAI <= 0.1"))
-
-p2 <- ggplot(inDF2, aes(x = Junction_Distance, y = Shift * 100, 
+p2 <- ggplot(inDF %>% drop_na %>% mutate(Group = ifelse(SpliceAI > 0.1, "SpliceAI > 0.1", "SpliceAI <= 0.1")), aes(x = Junction_Distance, y = Shift * 100, 
     color = Group)) + geom_point(stroke = NA, alpha = 0.75, size = 1) + facet_wrap(. ~ Group, nrow = 2) + scale_x_continuous(trans = "log10", breaks = c(1, 10, 
     100, 1000, 10000, 1e5, 1e6)) + theme_classic() + geom_vline(xintercept = 100, linetype = "dashed", color = "black", linewidth = 0.25) + 
     xlab("Variant-to-junction distance (bp)") + ylab("Absolute shift in splice junction usage frequency (%)") + 
