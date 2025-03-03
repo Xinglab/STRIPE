@@ -4,12 +4,15 @@
 # Date: 2025.03.02
 # Supplementary Figure 6
 
-# (a) Distances of splice junctions to known pathogenic variants in cis and their haplotype-resolved usage frequency shifts
-# relative to tissue-matched GTEx controls based on TEQUILA-seq data on previously diagnosed individuals. Variants located in 
-# the -3 to +6 region of the donor splice site or the -20 to +3 region of the acceptor splice site were classified as "splice 
-# site region" variants. For plotting purposes, we represented the complex NUBPL haplotype (NM_025152.3:c.166G>A, p.Gly56Arg + 
-# c.815-27T>C) in patient PMD-P07 by the missense variant alone. (b) Same as in (a) but organized based on whether a variant 
-# is predicted to impact splicing (i.e. SpliceAI > 0.1) rather than variant class.
+# (a) Haplotype-resolved usage frequency shifts (relative to tissue-matched GTEx controls) as a function of distance to known 
+# pathogenic variants in cis for 7 splice junctions linked to structural deletions, 31 splice junctions linked to nonsense
+# variants, 247 splice junctions linked to splice site region variants, 68 splice junctions linked to inframe deletions, and
+# 319 splice junctions linked to missense variants based on TEQUILA-seq data on previously diagnosed individuals. Variants 
+# located in the -3 to +6 region of the donor splice site or the -20 to +3 region of the acceptor splice site were classified 
+# as "splice site region" variants. For plotting purposes, we represented the complex NUBPL haplotype (NM_025152.3:c.166G>A, 
+# p.Gly56Arg + c.815-27T>C) in patient PMD-P07 by the missense variant alone. (b) Same as in (a) but organized based on whether 
+# a variant is predicted to impact splicing (i.e. SpliceAI > 0.1) rather than variant class. Displayed are 348 splice junctions
+# linked to variants with SpliceAI <= 0.1 and 317 splice junctions linked to variants with SpliceAI > 0.1. 
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
@@ -32,11 +35,8 @@ outfile <- file.path(workdir, "manuscript/Revisions/20250228/Supplementary_Figur
 # Read in Supplementary Table 7 as a dataframe
 inDF <- read.table(file.path(workdir, "manuscript/Revisions/20250228/Supplementary_Tables/Table_S7/Table_S7.txt"), sep = "\t", header = TRUE) %>%
     mutate(Shift = abs(Usage - GTEx_Usage))
-labelDF <- table(inDF$Variant_Class) %>% data.frame %>% mutate(Label = paste(Var1, " (n = ", as.character(Freq), ")", sep = ""),
-    Var1 = factor(Var1, levels = c("Structural deletion", "Nonsense", "Splice site region", "Inframe deletion", "Missense"))) %>%
-    arrange(Var1)
-inDF <- inDF %>% mutate(Variant_Class = factor(Variant_Class, levels = levels(labelDF$Var1)), Junction_Distance = pmax(1, Junction_Distance))
-levels(inDF$Variant_Class) <- labelDF$Label
+inDF <- inDF %>% mutate(Variant_Class = factor(Variant_Class, levels = c("Structural deletion", "Nonsense", "Splice site region", "Inframe deletion", 
+    "Missense")), Junction_Distance = pmax(1, Junction_Distance))
 
 p1 <- ggplot(inDF, aes(x = Junction_Distance, y = Shift * 100, color = Variant_Class)) + geom_point(stroke = NA, alpha = 0.75, size = 1) + 
     facet_wrap(. ~ Variant_Class, nrow = 2) + scale_x_continuous(trans = "log10", breaks = c(1, 10, 100, 1000, 10000, 1e5, 1e6)) + theme_classic() +
@@ -55,8 +55,8 @@ p1 <- ggplot(inDF, aes(x = Junction_Distance, y = Shift * 100, color = Variant_C
 #   p-value = 6.4e-05
 
 inDF2 <- inDF %>% drop_na %>% mutate(Group = ifelse(SpliceAI > 0.1, "SpliceAI > 0.1", "SpliceAI <= 0.1"))
-labelDF2 <- table(inDF2$Group) %>% data.frame %>% mutate(Label = paste(Var1, " (n = ", as.character(Freq), ")", sep = ""))
-p2 <- ggplot(, aes(x = Junction_Distance, y = Shift * 100, 
+
+p2 <- ggplot(inDF2, aes(x = Junction_Distance, y = Shift * 100, 
     color = Group)) + geom_point(stroke = NA, alpha = 0.75, size = 1) + facet_wrap(. ~ Group, nrow = 2) + scale_x_continuous(trans = "log10", breaks = c(1, 10, 
     100, 1000, 10000, 1e5, 1e6)) + theme_classic() + geom_vline(xintercept = 100, linetype = "dashed", color = "black", linewidth = 0.25) + 
     xlab("Variant-to-junction distance (bp)") + ylab("Absolute shift in splice junction usage frequency (%)") + 
