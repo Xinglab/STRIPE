@@ -5,7 +5,7 @@
 # Supplementary Figure 9a
 
 # (a) Sashimi plot visualization of haplotype-resolved NUBPL splicing patterns in individual PMD-P07. Haplotype 1 
-# carries a missense variant (NM_025152.3:c.166G>A, p.Gly56Arg) exon 2. 
+# carries a missense variant (NM_025152.3:c.166G>A, p.Gly56Arg) on exon 2. 
 
 # =====================================================================================================================
 #                                                        MAIN
