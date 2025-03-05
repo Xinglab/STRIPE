@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Robert Wang (Xing Lab)
-# Date: 2024.10.10
+# Date: 2025.03.05
 
 # Generate a multiple sequence alignment between the canonical transcript sequence for ALG1 and those of its 8 known 
 # pseudogenes (https://www.ncbi.nlm.nih.gov/gene?Db=gene&Cmd=DetailsSearch&Term=56052)
@@ -14,7 +14,7 @@
 WORKDIR="/mnt/isilon/lin_lab_share/STRIPE"
 GENOME="/scr1/users/wangr5/references/GRCh38.primary_assembly.genome.fa"
 GENCODE="/scr1/users/wangr5/references/gencode.v45.annotation.gtf"
-OUTDIR="$WORKDIR/manuscript/Main_Figures/Figure_6"
+OUTDIR="$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_7"
 
 mkdir -p "$OUTDIR/ALG1"
 
