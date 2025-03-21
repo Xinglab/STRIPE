@@ -29,12 +29,12 @@ outfile <- file.path(workdir, "manuscript/Revisions/20250228/Main_Figures/Figure
 # Construct dataframe summarizing number of individuals in cohort by disease group and genetic diagnosis category
 df <- tibble(
     Category = rep(c("Control", "Known genetic cause", "Variant(s) of uncertain\nsignificance",
-        "Single variant,\nrecessive condition", "No candidate variants"), each = 3),
+        "Single variant,\nrecessive condition", "No candidate genes"), each = 3),
     Group = rep(c("Control", "CDG", "PMD"), 5),
     Count = c(20, 0, 0, 0, 13, 9, 0, 1, 3, 0, 4, 0, 0, 11, 27)
 )
 df$Category <- factor(df$Category, levels = rev(c("Control", "Known genetic cause", "Variant(s) of uncertain\nsignificance",
-    "Single variant,\nrecessive condition", "No candidate variants")))
+    "Single variant,\nrecessive condition", "No candidate genes")))
 df$Group <- factor(df$Group, levels = c("Control", "CDG", "PMD"))
 
 # Plot number of individuals in cohort by disease group and genetic diagnosis category
