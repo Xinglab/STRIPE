@@ -6,6 +6,7 @@
 
 # (a) Sashimi plot visualization of haplotype-resolved PIGQ splicing patterns in individual CDG-P09. Haplotype 1 
 # (paternal) carries a variant (NM_004204.5:c.942+1G>A) that disrupts the donor splice site of intron 4. 
+# Reads that could not be confidently assigned to a haplotype (Methods) are not displayed.
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -36,5 +37,6 @@ echo -e "Haplotype 2\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Table
     -c "chr16:574066-578938" -o "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/Figure_4a" -M 50 \
     -g "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/tmp/input.gtf" -C 3 --alpha 1 --height 1 \
     --ann-height 0.5 --width 3.5 --base-size 6) > /dev/null 2>&1
+
 
 rm -rf "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/tmp"
