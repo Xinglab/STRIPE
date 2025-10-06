@@ -5,7 +5,7 @@
 # Figure 2a
 
 # Haplotype-resolved read coverage over TRMU in patient PMD-P09, who is heterozygous for a 1.8-kb structural deletion that 
-# removes the promoter region and first exon. 
+# removes the promoter region and first exon. Reads that could not be confidently assigned to a haplotype (Methods) are not displayed.
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
