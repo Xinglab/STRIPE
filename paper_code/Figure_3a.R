@@ -4,9 +4,10 @@
 # Date: 2025.03.03
 # Figure 3a
 
-# (a) Number of unique RNA processing defects observed for splice site region variants that were identified from clinical 
-# testing of previously diagnosed and undiagnosed patients. Variants located in the -3 to +6 region of the donor splice 
-# site or the -20 to +3 region of the acceptor splice site were classified as "splice site region" variants. 
+# (a) Number of unique RNA processing defects observed across multiple genes harboring splice site region variants that 
+# were identified from clinical testing of previously diagnosed and undiagnosed patients. Variants located in the -3 to 
+# +6 region of the donor splice site or the -20 to +3 region of the acceptor splice site were classified as "splice site 
+# region" variants. 
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
