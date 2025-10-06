@@ -5,7 +5,8 @@
 # Figure 2c
 
 # (c) Sashimi plot visualization of haplotype-resolved PMM2 splicing patterns in individual CDG-P12. Haplotype 2 carries 
-# a 15.4-kb structural deletion that removes a genomic region containing exons 3 to 7. 
+# a 15.4-kb structural deletion that removes a genomic region containing exons 3 to 7. Reads that could not be confidently 
+# assigned to a haplotype (Methods) are not displayed
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -36,5 +37,6 @@ echo -e "Haplotype 2\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Table
     -c "chr16:8797839-8849325" -o "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_2/Figure_2c" -M 1000 \
     -g "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_2/tmp/input.gtf" --shrink -C 3 --alpha 1 --height 1 \
     --ann-height 0.5 --width 3.5 --base-size 6) > /dev/null 2>&1
+
 
 rm -rf "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_2/tmp"
