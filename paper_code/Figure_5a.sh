@@ -30,7 +30,7 @@ echo -e "Haplotype 1\t$WORKDIR/CDG/$SAMPID/RNA/stripe/target_genes/NGLY1/hap1_re
 echo -e "Haplotype 2\t$WORKDIR/CDG/$SAMPID/RNA/stripe/target_genes/NGLY1/hap2_reads.bam\t2" \
     >> "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_5/tmp/input_bam.txt"
 
-# Use ggsashimi.py to visualize haplotype-resolved NGLY1 splicing patterns in individual CDG-P16
+# Use ggsashimi.py to visualize haplotype-resolved splicing patterns around NGLY1 exons 9 to 12 in individual CDG-P16
 # Only visualize splice junctions supported by at least 200 reads
 (singularity run -B "$WORKDIR" docker://guigolab/ggsashimi:v1.1.5 -b "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_5/tmp/input_bam.txt" \
     -c "chr3:25,718,944-25732483" -o "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_5/Figure_5a" -M 200 \
@@ -38,4 +38,5 @@ echo -e "Haplotype 2\t$WORKDIR/CDG/$SAMPID/RNA/stripe/target_genes/NGLY1/hap2_re
     --ann-height 0.5 --width 3.5 --base-size 6) > /dev/null 2>&1
 
 rm -rf "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_5/tmp"
+
 
