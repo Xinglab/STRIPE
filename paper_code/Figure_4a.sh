@@ -4,9 +4,9 @@
 # Date: 2025.03.03
 # Figure 4a
 
-# (a) Sashimi plot visualization of haplotype-resolved PIGQ splicing patterns in individual CDG-P09. Haplotype 1 
-# (paternal) carries a variant (NM_004204.5:c.942+1G>A) that disrupts the donor splice site of intron 4. 
-# Reads that could not be confidently assigned to a haplotype (Methods) are not displayed.
+# (a) Sashimi plot visualization of haplotype-resolved splicing patterns around PIGQ exons 2 to 6 in individual CDG-P09. 
+# Haplotype 1 (paternal) carries a variant (NM_004204.5:c.942+1G>A) that disrupts the donor splice site of intron 4. Reads 
+# that could not be confidently assigned to a haplotype (Methods) are not displayed.
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -31,12 +31,11 @@ echo -e "Haplotype 1\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Table
 echo -e "Haplotype 2\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Tables/Table_S6/$SAMPID/PIGQ/hap2_reads.bam\t2" \
     >> "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/tmp/input_bam.txt"
 
-# Use ggsashimi.py to visualize haplotype-resolved PIGQ splicing patterns in individual CDG-P09
+# Use ggsashimi.py to visualize haplotype-resolved splicing patterns around PIGQ exons 2 to 6 in individual CDG-P09
 # Only visualize splice junctions supported by at least 50 reads
 (singularity run -B "$WORKDIR" docker://guigolab/ggsashimi:v1.1.5 -b "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/tmp/input_bam.txt" \
     -c "chr16:574066-578938" -o "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/Figure_4a" -M 50 \
     -g "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/tmp/input.gtf" -C 3 --alpha 1 --height 1 \
     --ann-height 0.5 --width 3.5 --base-size 6) > /dev/null 2>&1
-
 
 rm -rf "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_4/tmp"
