@@ -7,7 +7,7 @@
 # (e) Full-length structures and (f) isoform-level proportions of PMM2 transcripts detected from TEQUILA-seq data of 
 # individual CDG-P12 (resolved by haplotype) and other cohort individuals. Shaded and unshaded regions within transcript 
 # structures represent putative coding sequences and untranslated regions respectively. Transcripts with an isoform-level 
-# proportion ≥ 10% in Haplotype 2 or an average isoform-level proportion ≥ 10% across other cohort individuals are displayed 
+# proportion ≥ 5% in Haplotype 2 or an average isoform-level proportion ≥ 5% across other cohort individuals are displayed 
 # in (e, f). (g) Read counts for PMM2 transcripts displayed in (e, f) in individual CDG-P12 (resolved by haplotype).
 
 # =====================================================================================================================
@@ -134,7 +134,7 @@ propMatrix <- bind_cols(outDF[,1], sweep(outDF[,-1], 2, colSums(outDF[,-1]), `/`
 sampleTx <- propMatrix[,c(1,3)] %>% arrange(desc(`Haplotype_2`))
 cohortTx <- propMatrix[,-c(2,3)] %>% mutate(Total = rowMeans(across(where(is.numeric)))) %>% select(Transcript_ID, Total) %>% arrange(desc(Total))
 
-# Only keep transcripts with isoform fraction >= 0.1 in haplotype 2 or average isoform fraction >= 0.1 across other cohort individuals
+# Only keep transcripts with isoform fraction >= 0.05 in haplotype 2 or average isoform fraction >= 0.05 across other cohort individuals
 keepTranscripts <- c("ENST00000268261.9", "TCONS_00000001")
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
@@ -206,5 +206,6 @@ ggsave(file.path(workdir, "manuscript/Revisions/20250228/Main_Figures/Figure_2/F
 
 # Remove intermediate files
 system(paste("rm -rf", file.path(workdir, "manuscript/Revisions/20250228/Main_Figures/Figure_2/tmp")))
+
 
 
