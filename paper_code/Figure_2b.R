@@ -5,7 +5,7 @@
 # Figure 2b
 
 # Haplotype-resolved read coverage over PIGN in patient CDG-P07, who is heterozygous for a stop-gain variant 
-# (NM_176787.5:c.1759C>T, p.Arg587Ter).
+# (NM_176787.5:c.1759C>T, p.Arg587Ter). Reads that could not be confidently assigned to a haplotype (Methods) are not displayed.
 
 # =====================================================================================================================
 #                                                      LIBRARIES 
