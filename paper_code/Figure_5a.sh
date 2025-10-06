@@ -4,8 +4,8 @@
 # Date: 2025.03.04
 # Figure 5a
 
-# (a) Sashimi plot visualization of haplotype-resolved NGLY1 splicing patterns in individual CDG-P16. Haplotype 1 (maternal) 
-# carries a frameshift deletion variant on exon 10 (NM_018297.4:c.1533_1536del, p.Asn511LysfsTer51).
+# (a) Sashimi plot visualization of haplotype-resolved splicing patterns around NGLY1 exons 9 to 12 in individual CDG-P16. 
+# Haplotype 1 (maternal) carries a frameshift deletion variant on exon 10 (NM_018297.4:c.1533_1536del, p.Asn511LysfsTer51).
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -38,3 +38,4 @@ echo -e "Haplotype 2\t$WORKDIR/CDG/$SAMPID/RNA/stripe/target_genes/NGLY1/hap2_re
     --ann-height 0.5 --width 3.5 --base-size 6) > /dev/null 2>&1
 
 rm -rf "$WORKDIR/manuscript/Revisions/20250228/Main_Figures/Figure_5/tmp"
+
