@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Author: Robert Wang (Xing Lab)
-# Date: 2025.02.28
+# Date: 2025.10.06
 # Figure 1d
 
 # Gene abundances based on untargeted long-read RNA-seq and TEQUILA-seq data for fibroblast cell lines CDG-P12
@@ -18,16 +18,6 @@
 suppressMessages(library(dplyr))
 suppressMessages(library(ggplot2))
 suppressMessages(library(tidyr))
-
-# =====================================================================================================================
-#                                                   HELPER FUNCTIONS
-# =====================================================================================================================
-
-PullFeature <- function(infoString, featureName) {
-    # Function designed to pull out the value for featureName in infoString
-    present <- unlist(lapply(strsplit(infoString, "; "), function(x) lapply(strsplit(x, " "), "[[", 1) == featureName))
-    return(ifelse(sum(present) == 1, unlist(lapply(strsplit(unlist(strsplit(infoString, "; "))[present], " "), "[[", 2)), NA))
-}
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -48,13 +38,9 @@ for (disease in c("CDG", "PMD")) {
     sample.id <- ifelse(disease == "CDG", sample.map["CDG-P12"], sample.map["PMD-C01"])
     target.genes <- read.table(file.path(workdir, disease, "references/target_genes.txt"))$V1
     for (library in c("ONT", "TEQUILA")) {
-        gene.map <- read.table(file.path(workdir, disease, sample.id, "RNA", ifelse(library == "ONT", "stripe_qc", "stripe"), 
-            "quality_control/stringtie", paste(sample.id, "_", library, ".gtf", sep = "")), sep = "\t", header = FALSE) %>% 
-            filter(V3 == "transcript") %>% mutate(Gene_ID = unlist(lapply(V9, function(x) PullFeature(x, "gene_id"))), 
-            Reference_Gene_ID = unlist(lapply(V9, function(x) PullFeature(x, "ref_gene_id")))) %>% select(Gene_ID, Reference_Gene_ID) %>% drop_na()
         input.data <- read.table(file.path(workdir, disease, sample.id, "RNA", ifelse(library == "ONT", "stripe_qc", "stripe"),
-            "quality_control/stringtie", paste(sample.id, "_", library, ".gene_abundance.tsv", sep = "")), sep = "\t", header = TRUE) %>% 
-            filter(!(Gene.ID %in% gene.map$Gene_ID)) %>% separate(Gene.ID, c("Gene_ID", NA), sep = "\\.") %>% 
+            "quality_control/stringtie", paste(sample.id, "_", library, ".gene_abundance.tsv", sep = "")), sep = "\t", header = TRUE) %>%
+            filter(grepl("ENSG", Gene.ID)) %>% separate(Gene.ID, c("Gene_ID", NA), sep = "\\.") %>% 
             mutate(Group = case_when(Gene_ID %in% target.genes ~ "Target", TRUE ~ "Non-target")) %>% select(Gene_ID, Group, TPM) %>% 
             mutate(Rank = rank(-TPM, ties.method = "first"), Library = library, Panel = disease)
         outDF <- bind_rows(outDF, input.data)
