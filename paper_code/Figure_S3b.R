@@ -18,16 +18,6 @@ suppressMessages(library(tidyr))
 suppressMessages(library(pcaMethods))
 
 # =====================================================================================================================
-#                                                   HELPER FUNCTIONS
-# =====================================================================================================================
-
-PullFeature <- function(infoString, featureName) {
-    # Function designed to pull out the value for featureName in infoString
-    present <- unlist(lapply(strsplit(infoString, "; "), function(x) lapply(strsplit(x, " "), "[[", 1) == featureName))
-    return(ifelse(sum(present) == 1, unlist(lapply(strsplit(unlist(strsplit(infoString, "; "))[present], " "), "[[", 2)), NA))
-}
-
-# =====================================================================================================================
 #                                                        MAIN
 # =====================================================================================================================
 
@@ -55,13 +45,9 @@ for (disease in c("CDG", "PMD")) {
 
     # Read in target gene abundances for TEQUILA-seq data on fibroblast cell lines from 88 cohort individuals
     for (sample.id in cohort.samples) {
-        sample.map <- read.table(file.path(workdir, disease, sample.id, "RNA/stripe/quality_control/stringtie", 
-            paste(sample.id, "TEQUILA.gtf", sep = "_")), sep = "\t", header = FALSE) %>% filter(V3 == "transcript") %>% 
-            mutate(Gene_ID = unlist(lapply(V9, function(x) PullFeature(x, "gene_id"))), Reference_Gene_ID = unlist(lapply(
-            V9, function(x) PullFeature(x, "ref_gene_id")))) %>% select(Gene_ID, Reference_Gene_ID) %>% drop_na()
         sample.data <- read.table(file.path(workdir, disease, sample.id, "RNA/stripe/quality_control/stringtie", 
-            paste(sample.id, "TEQUILA.gene_abundance.tsv", sep = "_")), sep = "\t", header = TRUE) %>% filter(!(
-            Gene.ID %in% sample.map$Gene_ID)) %>% separate(Gene.ID, c("Gene_ID", NA), sep = "\\.") %>% filter(
+            paste(sample.id, "TEQUILA.gene_abundance.tsv", sep = "_")), sep = "\t", header = TRUE) %>% 
+            filter(grepl("ENSG", Gene.ID)) %>% separate(Gene.ID, c("Gene_ID", NA), sep = "\\.") %>% filter(
             Gene_ID %in% target.genes) %>% select(Gene_ID, TPM) %>% setNames(c("Gene_ID", sample.id))
         outDF <- left_join(outDF, sample.data, by = join_by(Gene_ID)) %>% replace(is.na(.), 0)
     }
