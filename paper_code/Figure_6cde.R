@@ -7,8 +7,8 @@
 # (c) Full-length structures and (d) isoform-level proportions of MTFMT transcripts detected from TEQUILA-seq data of 
 # individual PMD-P23 (resolved by haplotype) and other cohort individuals. Shaded and unshaded regions within transcript 
 # structures represent putative coding sequences and untranslated regions respectively. Transcripts featuring MTFMT exon 4 
-# skipping with an isoform-level proportion ≥ 5% in Haplotype 1, or transcripts featuring inclusion of pseudoexon within 
-# intron 6 with an isoform-level proportion ≥ 5% in Haplotype 2, or transcripts with an average isoform-level proportion ≥ 10% 
+# skipping with the highest isoform-level proportion in Haplotype 1, or transcripts featuring inclusion of pseudoexon within 
+# intron 6 with the highest isoform-level proportion in Haplotype 2, or transcripts with an average isoform-level proportion ≥ 10% 
 # across other cohort individuals are displayed in (c, d). (e) Read counts for MTFMT transcripts displayed in (c, d) in 
 # individual PMD-P23 (resolved by haplotype).  
 
@@ -139,8 +139,8 @@ sampleTx1 <- propMatrix[,c(1,2)] %>% arrange(desc(`Haplotype_1`))
 sampleTx2 <- propMatrix[,c(1,3)] %>% arrange(desc(`Haplotype_2`))
 cohortTx <- propMatrix[,-c(2,3)] %>% mutate(Total = rowMeans(across(where(is.numeric)), na.rm = T)) %>% select(Transcript_ID, Total) %>% arrange(desc(Total))
 
-# Only keep transcripts featuring MTFMT exon 4 skipping with an isoform-level proportion ≥ 5% in Haplotype 1, or transcripts featuring inclusion of pseudoexon within 
-# intron 6 with an isoform-level proportion ≥ 5% in Haplotype 2, or transcripts with an average isoform-level proportion ≥ 10% across other cohort individuals
+# Only keep transcripts featuring MTFMT exon 4 skipping with the highest isoform-level proportion in Haplotype 1, or transcripts featuring inclusion of pseudoexon within 
+# intron 6 with the highest isoform-level proportion in Haplotype 2, or transcripts with an average isoform-level proportion ≥ 10% across other cohort individuals
 keepTranscripts <- c("ENST00000220058.9", "TCONS_00000001", "TCONS_00000008")
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
