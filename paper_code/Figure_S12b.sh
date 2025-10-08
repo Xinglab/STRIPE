@@ -4,8 +4,8 @@
 # Date: 2025.03.03
 # Supplementary Figure 12b
 
-# (b) Sashimi plot visualization of haplotype-resolved NUBPL splicing patterns in individual PMD-P07. Haplotype 2 carries 
-# a variant (NM_025152.3:c.693+1G>A) that disrupts the donor splice site of intron 8. 
+# (b) Sashimi plot visualization of haplotype-resolved splicing patterns around NUBPL exons 7 to 9 in individual PMD-P07. 
+# Haplotype 2 carries a variant (NM_025152.3:c.693+1G>A) that disrupts the donor splice site of intron 8. 
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -30,7 +30,7 @@ echo -e "Haplotype 1\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Table
 echo -e "Haplotype 2\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Tables/Table_S6/$SAMPID/NUBPL/hap2_reads.bam\t2" \
     >> "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S12/tmp/input_bam.txt"
 
-# Use ggsashimi.py to visualize haplotype-resolved NUBPL splicing patterns in individual PMD-P07
+# Use ggsashimi.py to visualize haplotype-resolved splicing patterns around NUBPL exons 7 to 9 in individual PMD-P07
 # Only visualize splice junctions supported by at least 50 reads
 (singularity run -B "$WORKDIR" docker://guigolab/ggsashimi:v1.1.5 -b "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S12/tmp/input_bam.txt" \
     -c "chr14:31787780-31846591" -o "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S12/Figure_S12b" -M 50 \
