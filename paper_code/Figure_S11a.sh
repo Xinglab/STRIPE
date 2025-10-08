@@ -4,8 +4,8 @@
 # Date: 2025.03.03
 # Supplementary Figure 11a
 
-# (a) Sashimi plot visualization of haplotype-resolved TRIT1 splicing patterns in individual PMD-P12. Haplotype 1 
-# carries a synonymous VUS (NM_017646.6:c.702A>G, p.Ala234=) that maps to the -2 position of the intron 5 donor 
+# (a) Sashimi plot visualization of haplotype-resolved splicing patterns around TRIT1 exons 1 to 7 in individual PMD-P12. 
+# Haplotype 1 carries a synonymous VUS (NM_017646.6:c.702A>G, p.Ala234=) that maps to the -2 position of the intron 5 donor 
 # splice site. 
 
 # =====================================================================================================================
@@ -31,7 +31,7 @@ echo -e "Haplotype 1\t$WORKDIR/PMD/$SAMPID/RNA/stripe/target_genes/TRIT1/hap1_re
 echo -e "Haplotype 2\t$WORKDIR/PMD/$SAMPID/RNA/stripe/target_genes/TRIT1/hap2_reads.bam\t2" \
     >> "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S11/tmp/input_bam.txt"
 
-# Use ggsashimi.py to visualize haplotype-resolved TRIT1 splicing patterns in individual PMD-P12
+# Use ggsashimi.py to visualize haplotype-resolved splicing patterns around TRIT1 exons 1 to 7 in individual PMD-P12
 # Only visualize splice junctions supported by at least 110 reads
 (singularity run -B "$WORKDIR" docker://guigolab/ggsashimi:v1.1.5 -b "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S11/tmp/input_bam.txt" \
     -c "chr1:39847548-39883504" -o "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S11/Figure_S11a" -M 110 \
