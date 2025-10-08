@@ -7,7 +7,7 @@
 # (c) Full-length structures and (d) isoform-level proportions of EARS2 transcripts detected from TEQUILA-seq data of 
 # individual PMD-P03 (resolved by haplotype) and other cohort individuals. Shaded and unshaded regions within transcript 
 # structures represent putative coding sequences and untranslated regions respectively. Transcripts featuring skipping of 
-# EARS2 exons 3 to 7 with an isoform-level proportion ≥ 5% in Haplotype 1 or transcripts with an average isoform-level 
+# EARS2 exons 3 to 7 with the highest isoform-level proportion in Haplotype 1 or transcripts with an average isoform-level 
 # proportion ≥ 10% across other cohort individuals are displayed in (c, d). (e) Read counts for EARS2 transcripts 
 # displayed in (c, d) in individual CDG-P09 (resolved by haplotype). 
 
@@ -135,7 +135,7 @@ propMatrix <- bind_cols(outDF[,1], sweep(outDF[,-1], 2, colSums(outDF[,-1]), `/`
 sampleTx <- propMatrix[,c(1,2)] %>% arrange(desc(`Haplotype_1`))
 cohortTx <- propMatrix[,-c(2,3)] %>% mutate(Total = rowMeans(across(where(is.numeric)), na.rm = T)) %>% select(Transcript_ID, Total) %>% arrange(desc(Total))
 
-# Only keep transcripts featuring skipping of EARS2 exons 3 to 7 with isoform fraction >= 0.05 in haplotype 1 or average isoform fraction >= 0.1 across other cohort individuals
+# Only keep transcripts featuring skipping of EARS2 exons 3 to 7 with the highest isoform fraction in haplotype 1 or average isoform fraction >= 0.1 across other cohort individuals
 keepTranscripts <- c("ENST00000674054.1", "TCONS_00000005")
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
