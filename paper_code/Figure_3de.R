@@ -7,7 +7,7 @@
 # (d) Full-length structures and (e) isoform-level proportions of ATP5MK transcripts detected from TEQUILA-seq data of 
 # individual PMD-P01 and other cohort individuals. Shaded and unshaded regions within transcript structures represent 
 # putative coding sequences and untranslated regions respectively. Transcripts featuring exon 3 skipping, exons 2 and 3
-# skipping, or usage of a cryptic donor splice site within exon 3, with an isoform-level proportion ≥ 5% in individual 
+# skipping, or usage of a cryptic donor splice site within exon 3, with the highest isoform-level proportion in individual 
 # PMD-P01 or transcripts with an average isoform-level proportion ≥ 10% across other cohort individuals are displayed in 
 # (d, e). 
 
@@ -132,7 +132,7 @@ sampleTx <- propMatrix %>% select(Transcript_ID, !!!as.character(sample.map["PMD
 cohortTx <- propMatrix %>% select(-(!!!as.character(sample.map["PMD-P01"]))) %>% mutate(Total = rowMeans(across(where(is.numeric)))) %>% select(Transcript_ID, Total) %>% arrange(desc(Total))
 
 # Only keep transcripts featuring exon 3 skipping, exons 2 and 3 skipping, or usage of a cryptic donor splice site within exon 3, 
-# with isoform fraction >= 0.05 in PMD-P01 or average isoform fraction >= 0.1 across other cohort individuals
+# with the highest isoform fraction in PMD-P01 or average isoform fraction >= 0.1 across other cohort individuals
 keepTranscripts <- c("ENST00000369815.6", "ENST00000309579.7", "TCONS_00000007", "TCONS_00000006", "TCONS_00000002")
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
