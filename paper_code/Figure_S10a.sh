@@ -4,8 +4,8 @@
 # Date: 2025.03.03
 # Supplementary Figure 10a
 
-# (a) Sashimi plot visualization of haplotype-resolved SUCLG1 splicing patterns in individual PMD-P11. Haplotype 2 carries 
-# a VUS (NM_003849.4:c.98-9A>G) located 9 bp upstream of the intron 1 acceptor splice site.
+# (a) Sashimi plot visualization of haplotype-resolved splicing patterns around SUCLG1 exons 1 to 3 in individual PMD-P11. 
+# Haplotype 2 carries a VUS (NM_003849.4:c.98-9A>G) located 9 bp upstream of the intron 1 acceptor splice site.
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -30,7 +30,7 @@ echo -e "Haplotype 1\t$WORKDIR/PMD/$SAMPID/RNA/stripe/target_genes/SUCLG1/hap1_r
 echo -e "Haplotype 2\t$WORKDIR/PMD/$SAMPID/RNA/stripe/target_genes/SUCLG1/hap2_reads.bam\t2" \
     >> "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S10/tmp/input_bam.txt"
 
-# Use ggsashimi.py to visualize haplotype-resolved SUCLG1 splicing patterns in individual PMD-P11
+# Use ggsashimi.py to visualize haplotype-resolved splicing patterns around SUCLG1 exons 1 to 3 in individual PMD-P11
 # Only visualize splice junctions supported by at least 200 reads
 (singularity run -B "$WORKDIR" docker://guigolab/ggsashimi:v1.1.5 -b "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S10/tmp/input_bam.txt" \
     -c "chr2:84443284-84459280" -o "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S10/Figure_S10a" -M 200 \
