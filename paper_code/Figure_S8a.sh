@@ -4,9 +4,9 @@
 # Date: 2025.03.03
 # Supplementary Figure 8a
 
-# (a) Sashimi plot visualization of haplotype-resolved PMM2 splicing patterns in individual CDG-P10. Haplotype 1 carries 
-# a missense variant (NM_000303.3:c.415G>A, p.Glu139Lys) on exon 5 that is known to induce exon skipping by disrupting 
-# a splicing enhancer sequence. 
+# (a) Sashimi plot visualization of haplotype-resolved splicing patterns around PMM2 exons 4 to 7 in individual CDG-P10. 
+# Haplotype 1 carries a missense variant (NM_000303.3:c.415G>A, p.Glu139Lys) on exon 5 that is known to induce exon 
+# skipping by disrupting a splicing enhancer sequence. 
 
 # =====================================================================================================================
 #                                                        MAIN
@@ -31,7 +31,7 @@ echo -e "Haplotype 1\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Table
 echo -e "Haplotype 2\t$WORKDIR/manuscript/Revisions/20250228/Supplementary_Tables/Table_S6/$SAMPID/PMM2/hap2_reads.bam\t2" \
     >> "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S8/tmp/input_bam.txt"
 
-# Use ggsashimi.py to visualize haplotype-resolved PMM2 splicing patterns in individual CDG-P10
+# Use ggsashimi.py to visualize haplotype-resolved splicing patterns around PMM2 exons 4 to 7 in individual CDG-P10
 # Only visualize splice junctions supported by at least 400 reads
 (singularity run -B "$WORKDIR" docker://guigolab/ggsashimi:v1.1.5 -b "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S8/tmp/input_bam.txt" \
     -c "chr16:8806316-8813106" -o "$WORKDIR/manuscript/Revisions/20250228/Supplementary_Figures/Figure_S8/Figure_S8a" -M 400 \
