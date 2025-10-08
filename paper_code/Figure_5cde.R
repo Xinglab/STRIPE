@@ -7,7 +7,7 @@
 # (c) Full-length structures and (d) isoform-level proportions of NGLY1 transcripts detected from TEQUILA-seq data of 
 # individual CDG-P16 (resolved by haplotype) and other cohort individuals. Shaded and unshaded regions within transcript 
 # structures represent putative coding sequences and untranslated regions respectively. Transcripts featuring NGLY1 exon 
-# 11 skipping with an isoform-level proportion ≥ 5% in Haplotype 2 or transcripts with an average isoform-level proportion ≥ 10% 
+# 11 skipping with the highest isoform-level proportion in Haplotype 2 or transcripts with an average isoform-level proportion ≥ 10% 
 # across other cohort individuals are displayed in (c, d). The genomic region spanning these events is indicated by the dashed 
 # box in (c). (e) Read counts for NGLY1 transcripts displayed in (c, d) in individual CDG-P16 (resolved by haplotype). 
 
@@ -136,7 +136,7 @@ propMatrix <- bind_cols(outDF[,1], sweep(outDF[,-1], 2, colSums(outDF[,-1]), `/`
 sampleTx <- propMatrix[,c(1,3)] %>% arrange(desc(`Haplotype_2`))
 cohortTx <- propMatrix[,-c(2,3)] %>% mutate(Total = rowMeans(across(where(is.numeric)))) %>% select(Transcript_ID, Total) %>% arrange(desc(Total))
 
-# Only keep transcripts featuring exon 11 skipping with isoform fraction >= 0.05 in haplotype 2 or average isoform fraction >= 0.1 across other cohort individuals
+# Only keep transcripts featuring exon 11 skipping with the highest isoform fraction in haplotype 2 or average isoform fraction >= 0.1 across other cohort individuals
 keepTranscripts <- c("ENST00000280700.10", "ENST00000396649.7")
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
