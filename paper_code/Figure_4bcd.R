@@ -7,7 +7,7 @@
 # (b) Full-length structures and (c) isoform-level proportions of PIGQ transcripts detected from TEQUILA-seq data of 
 # individual CDG-P09 and other cohort individuals. Shaded and unshaded regions within transcript structures represent 
 # putative coding sequences and untranslated regions respectively. Transcripts featuring exon 4 skipping or usage of 
-# a polyadenylation site within intron 4 with an isoform-level proportion ≥ 1% in Haplotype 1 or transcripts with an 
+# a polyadenylation site within intron 4 with the highest isoform-level proportion in Haplotype 1 or transcripts with an 
 # average isoform-level proportion ≥ 10% across other cohort individuals are displayed in (b, c). (d) Read counts for 
 # PIGQ transcripts displayed in (b, c) in individual CDG-P09 (resolved by haplotype).
 
@@ -141,7 +141,7 @@ sampleTx <- propMatrix[,c(1,2)] %>% arrange(desc(`Haplotype_1`))
 cohortTx <- propMatrix[,-c(2,3)] %>% mutate(Total = rowMeans(across(where(is.numeric)), na.rm = T)) %>% select(Transcript_ID, Total) %>% arrange(desc(Total))
 
 # Only keep transcripts featuring exon 4 skipping or usage of a polyadenylation site within intron 4,
-# with isoform fraction >= 0.01 in haplotype 1 or average isoform fraction >= 0.1 across other cohort individuals
+# with the highest isoform fraction in haplotype 1 or average isoform fraction >= 0.1 across other cohort individuals
 keepTranscripts <- c("ENST00000321878.10", "ENST00000026218.9", "TCONS_00000010", "TCONS_00000011", "ENST00000470411.2")
 propMatrix$Transcript_ID[!(propMatrix$Transcript_ID %in% keepTranscripts)] <- "Other"
 propMatrix <- propMatrix %>% group_by(Transcript_ID) %>% summarise(across(everything(), sum)) %>% ungroup
@@ -215,4 +215,3 @@ ggsave(file.path(workdir, "manuscript/Revisions/20250228/Main_Figures/Figure_4/F
 
 # Remove intermediate files
 system(paste("rm -rf", file.path(workdir, "manuscript/Revisions/20250228/Main_Figures/Figure_4/tmp")))
-
