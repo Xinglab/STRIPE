@@ -120,4 +120,5 @@ p <- ggplot(varDF, aes(x = factor(PC), y = Variance * 100)) + facet_wrap(. ~ Pan
     ylab("% of variance explained") + geom_text(aes(label = Label), vjust = -0.5, hjust = 0.5, color = "black",
     size = 5/14*6)
 
-ggsave(file.path(outdir, "Figure_S3e.pdf"), plot = p, width = 4.5, height = 1.75)
+
+ggsave(file.path(outdir, "Figure_S3e.pdf"), plot = p, width = 3.5, height = 1.75)
